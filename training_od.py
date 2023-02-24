@@ -162,7 +162,7 @@ def evaluate_step(model, env, repeats=8):
     model.train()
 
 
-def train_loop(min_episodes=20, update_step=10, batch_size=64,
+def train_loop(min_episodes=100, update_step=10, batch_size=64,
          num_episodes=3000, seed=42, max_memory_size=50000, measure_step=100,
         env_name='ALE/Seaquest-v5', horizon=np.inf):
     """
@@ -221,6 +221,7 @@ def train_loop(min_episodes=20, update_step=10, batch_size=64,
             i += 1
             action = env.action_space.sample()
             done = env.step(action)
+            print("done???", done, file=sys.stderr, flush=True)
 
             if i > horizon:
                 done = True

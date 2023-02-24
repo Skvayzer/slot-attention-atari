@@ -20,7 +20,7 @@ class SlotAttentionAE(nn.Module):
     """
 
     def __init__(self,
-                 resolution=(105, 80),
+                 resolution=(128, 128),
                  num_slots=6,
                  num_iters=3,
                  in_channels=3,
@@ -110,6 +110,7 @@ class SlotAttentionAE(nn.Module):
 
     def step(self, batch):
         result, _, kl_loss, _ = self.forward(batch)
+
         loss = F.mse_loss(result, batch)
         return loss, kl_loss
 

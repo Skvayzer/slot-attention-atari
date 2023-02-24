@@ -144,7 +144,7 @@ def evaluate_step(model, env, repeats=8):
     model.eval()
     for _ in range(repeats):
         state = env.reset()
-        img = env.render(mode='rgb_array')
+        img = env.render()
         done = False
         while not done:
             img = torch.Tensor(img).to(device)
@@ -152,7 +152,7 @@ def evaluate_step(model, env, repeats=8):
                 model.validation_step(img.unsqueeze())
             action = env.action_space.sample()
             state, reward, done, _ = env.step(action)
-            img = env.render(mode='rgb_array')
+            img = env.render()
     model.train()
 
 
@@ -188,7 +188,7 @@ def train_loop(min_episodes=20, update_step=10, batch_size=64,
 
 
 
-    env = gym.make(env_name)
+    env = gym.make(env_name, render_mode='rgb_array')
     torch.manual_seed(seed)
     env.seed(seed)
 
@@ -206,7 +206,7 @@ def train_loop(min_episodes=20, update_step=10, batch_size=64,
 
         state = env.reset()
         # memory.state.append(state)
-        img = env.render(mode='rgb_array')
+        img = env.render()
         memory.update(img)
 
         done = False
@@ -219,7 +219,7 @@ def train_loop(min_episodes=20, update_step=10, batch_size=64,
             if i > horizon:
                 done = True
 
-            img = env.render(mode='rgb_array')
+            img = env.render()
             # save state, action, reward sequence
             memory.update(img)
 

@@ -158,7 +158,7 @@ def evaluate_step(model, env, repeats=8):
             with torch.no_grad():
                 model.validation_step(img.unsqueeze(dim=0))
             action = env.action_space.sample()
-            state, reward, done = env.step(action)
+            reward, done = env.step(action)
             img = env.render()
     model.train()
 

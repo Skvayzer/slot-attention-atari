@@ -158,7 +158,7 @@ def evaluate_step(model, env, repeats=8):
             with torch.no_grad():
                 model.validation_step(img.unsqueeze(dim=0))
             action = env.action_space.sample()
-            state, reward, done, _ = env.step(action)
+            state, reward, done = env.step(action)
             img = env.render()
     model.train()
 
@@ -221,7 +221,7 @@ def train_loop(min_episodes=20, update_step=10, batch_size=64,
         while not done:
             i += 1
             action = env.action_space.sample()
-            state, reward, done, _ = env.step(action)
+            state, reward, done = env.step(action)
 
             if i > horizon:
                 done = True
@@ -297,7 +297,7 @@ if not len(args.from_checkpoint):
 #
 #     autoencoder.load_state_dict(state_dict=ckpt, strict=False)
 
-train_loop(env_name='ALE/Seaquest-v5')
+train_loop(env_name='Seaquest-v0')
 
 wandb.finish()
 

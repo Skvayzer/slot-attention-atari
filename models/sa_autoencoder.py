@@ -134,7 +134,8 @@ class SlotAttentionAE(nn.Module):
         self.eval()
         loss, kl_loss = self.step(batch)
         wandb.log({'Validation MSE': loss})
-        wandb.log({'Validation KL': kl_loss})
+        if self.quantization:
+            wandb.log({'Validation KL': kl_loss})
 
         imgs = batch
 

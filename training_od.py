@@ -95,8 +95,7 @@ class Memory:
 
     def update(self, img=None, state=None, action=None, reward=None, done=None):
 
-        if img!=None:
-            self.images.append(img)
+        self.images.append(img)
         if state!=None:
             # if the episode is finished we do not save to new state. Otherwise we have more states per episode than rewards
             # and actions which leads to a mismatch when we sample from memory.
@@ -221,7 +220,7 @@ def train_loop(min_episodes=20, update_step=10, batch_size=64,
         while not done:
             i += 1
             action = env.action_space.sample()
-            state, reward, done = env.step(action)
+            done = env.step(action)
 
             if i > horizon:
                 done = True

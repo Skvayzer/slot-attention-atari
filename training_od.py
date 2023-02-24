@@ -115,7 +115,8 @@ class Memory:
         """
         n = len(self.images)
         idx = random.sample(range(0, n-1), batch_size)
-        images = torch.Tensor(self.images)[idx].to(device)
+        images = torch.Tensor(self.images)[idx].to(device).float() / 255
+        images = images*2 - 1
         print("batch shape", images.shape, file=sys.stderr, flush=True)
         images = images.permute(0, 3, 2, 1)
         images = F.resize(images, resize).permute(0, 1, 3, 2)
@@ -154,8 +155,8 @@ def evaluate_step(model, env, repeats=8):
         img = env.render()
         done = False
         while not done:
-            img = torch.Tensor(img).to(device)
-
+            img = torch.Tensor(img).to(device).float() / 255
+            img = img * 2 - 1
             print("img shape", img.shape, file=sys.stderr, flush=True)
             img = img.permute(2, 0, 1)
             print("img ", img, torch.max(img), torch.min(img), file=sys.stderr, flush=True)

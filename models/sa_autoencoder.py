@@ -117,9 +117,9 @@ class SlotAttentionAE(nn.Module):
     def training_step(self, batch, optimizer, sch):
         self.train()
         loss, kl_loss = self.step(batch)
-        self.log('Training MSE', loss)
+        wandb.log({'Training MSE': loss})
         if self.quantization:
-            self.log('Training KL', kl_loss)
+            wandb.log({'Training KL': kl_loss})
 
         loss = loss + kl_loss * self.beta
         optimizer.zero_grad()
@@ -127,14 +127,14 @@ class SlotAttentionAE(nn.Module):
         optimizer.step()
         sch.step()
 
-        self.log('lr', sch.get_last_lr()[0], on_step=False, on_epoch=True)
+        wandb.log({'lr': sch.get_last_lr()[0]})
         return loss
 
     def validation_step(self, batch):
         self.eval()
         loss, kl_loss = self.step(batch)
-        self.log('Validation MSE', loss)
-        self.log('Validation KL', kl_loss)
+        wandb.log({'Validation MSE': loss})
+        wandb.log({'Validation KL': kl_loss})
 
         imgs = batch
 
@@ -142,12 +142,12 @@ class SlotAttentionAE(nn.Module):
         # print("\n\nATTENTION! imgs: ", imgs.shape, file=sys.stderr, flush=True)
         # print("\n\nATTENTION! recons: ", recons.shape, file=sys.stderr, flush=True)
 
-        self.trainer.logger.experiment.log({
+        wandb.log({
             'images': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(imgs, -1, 1)],
             'reconstructions': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(result, -1, 1)]
         })
 
-        self.trainer.logger.experiment.log({
+        wandb.log({
             f'{i} slot': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(recons[:, i], -1, 1)]
             for i in range(self.num_slots)
         })

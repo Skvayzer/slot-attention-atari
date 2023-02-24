@@ -208,8 +208,8 @@ def train_loop(min_episodes=20, update_step=10, batch_size=64,
         # display the performance
         if episode % measure_step == 0:
             evaluate_step(autoencoder, env)
-            wandb_logger.log("Episode", episode)
-            wandb_logger.log("lr", scheduler.get_lr()[0])
+            wandb.log({"Episode": episode})
+            wandb.log({"lr": scheduler.get_lr()[0]})
 
         state = env.reset()
         # memory.state.append(state)
@@ -264,11 +264,11 @@ dict_args = vars(args)
 
 project_name = 'object_detection_' + dataset
 
-wandb_logger = WandbLogger(project=project_name, name=f'{args.task}: nums {args.nums!r} s {args.seed} kl {args.beta}',
-                           log_model=True)
+# wandb_logger = WandbLogger(project=project_name, name=f'{args.task}: nums {args.nums!r} s {args.seed} kl {args.beta}',
+#                            log_model=True)
 
 monitor = 'Validation MSE'
-autoencoder = SlotAttentionAE(**dict_args, log=wandb_logger)
+autoencoder = SlotAttentionAE(**dict_args)
 autoencoder.to(device)
 
 if args.pretrained:

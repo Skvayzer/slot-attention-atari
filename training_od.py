@@ -155,8 +155,12 @@ def evaluate_step(model, env, repeats=8):
         done = False
         while not done:
             img = torch.Tensor(img).to(device)
+
             print("img shape", img.shape, file=sys.stderr, flush=True)
             img = img.permute(2, 1, 0)
+            wandb.log({
+                'orig images': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(img, -1, 1)],
+            })
             img = torchvision.transforms.CenterCrop((160, 160))(img)
             img = F.resize(img, resize) #.permute(0, 2, 1)
             print("img shape", img.shape, file=sys.stderr, flush=True)

@@ -122,6 +122,8 @@ class Memory:
         images = F.resize(images, resize).permute(0, 1, 3, 2)
         print("batch shape", images.shape, file=sys.stderr, flush=True)
 
+
+
         return images
         # return torch.Tensor(self.state)[idx].to(device), torch.LongTensor(self.action)[idx].to(device), \
         #        torch.Tensor(self.state)[1+np.array(idx)].to(device), torch.Tensor(self.rewards)[idx].to(device), \
@@ -136,7 +138,7 @@ class Memory:
 
 
 def train_step(batch_size, model, optimizer, scheduler, memory):
-
+    model.train()
     # states, actions, next_states, rewards, is_done = memory.sample(batch_size)
     images = memory.sample(batch_size)
 

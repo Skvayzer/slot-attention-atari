@@ -146,7 +146,7 @@ class SlotAttentionAE(nn.Module):
         # print("\n\nATTENTION! recons: ", recons.shape, file=sys.stderr, flush=True)
 
         wandb.log({
-            'images': [wandb.Image(imgs)],
+            'images': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(imgs, -1, 1)],
             'reconstructions': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(result, -1, 1)]
         })
 

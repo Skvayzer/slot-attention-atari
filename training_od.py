@@ -16,6 +16,7 @@ import torch
 import numpy as np
 from torch import nn
 import random
+import torchvision
 import torchvision.transforms.functional as F
 import collections
 import wandb
@@ -74,7 +75,7 @@ program_parser.add_argument("--quantization", default=False, action=argparse.Boo
 args = parser.parse_args()
 
 # h, w
-resize = (80, 105)
+resize = (128, 128)
 
 """
 Implementation of Double DQN for gym environments with discrete action space.
@@ -156,6 +157,7 @@ def evaluate_step(model, env, repeats=8):
             img = torch.Tensor(img).to(device)
             print("img shape", img.shape, file=sys.stderr, flush=True)
             img = img.permute(2, 1, 0)
+            img = torchvision.transforms.CenterCrop((160, 160))(img)
             img = F.resize(img, resize) #.permute(0, 2, 1)
             print("img shape", img.shape, file=sys.stderr, flush=True)
 

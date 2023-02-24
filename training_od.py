@@ -266,6 +266,7 @@ project_name = 'object_detection_' + dataset
 
 # wandb_logger = WandbLogger(project=project_name, name=f'{args.task}: nums {args.nums!r} s {args.seed} kl {args.beta}',
 #                            log_model=True)
+wandb.init(project=project_name)
 
 monitor = 'Validation MSE'
 autoencoder = SlotAttentionAE(**dict_args)

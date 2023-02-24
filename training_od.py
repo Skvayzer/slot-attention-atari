@@ -16,7 +16,7 @@ import torch
 import numpy as np
 from torch import nn
 import random
-import torch.nn.functional as F
+import torchvision.transforms.functional as F
 import collections
 import wandb
 

@@ -29,7 +29,7 @@ class SlotAttentionAE(nn.Module):
                  hidden_size=64,
                  dataset='',
                  task='',
-                 quantization=True,
+                 quantization=False,
                  nums=[8, 8, 8, 8],
                  beta=1,
                  lr=4e-4,

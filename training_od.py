@@ -73,6 +73,8 @@ program_parser.add_argument("--quantization", default=False, action=argparse.Boo
 # Parse input
 args = parser.parse_args()
 
+# h, w
+resize = (80, 105)
 
 """
 Implementation of Double DQN for gym environments with discrete action space.
@@ -115,7 +117,7 @@ class Memory:
         images = torch.Tensor(self.images)[idx].to(device)
         print("batch shape", images.shape, file=sys.stderr, flush=True)
         images = images.permute(0, 3, 2, 1)
-        images = F.resize(images, (105, 80)).permute(0, 1, 3, 2)
+        images = F.resize(images, resize).permute(0, 1, 3, 2)
         print("batch shape", images.shape, file=sys.stderr, flush=True)
 
         return images
@@ -154,7 +156,7 @@ def evaluate_step(model, env, repeats=8):
             img = torch.Tensor(img).to(device)
             print("img shape", img.shape, file=sys.stderr, flush=True)
             img = img.permute(2, 1, 0)
-            img = F.resize(img, (105, 80)).permute(0, 2, 1)
+            img = F.resize(img, resize) #.permute(0, 2, 1)
             print("img shape", img.shape, file=sys.stderr, flush=True)
 
             with torch.no_grad():
@@ -272,7 +274,7 @@ project_name = 'object_detection_' + dataset
 wandb.init(project=project_name)
 
 monitor = 'Validation MSE'
-autoencoder = SlotAttentionAE(**dict_args)
+autoencoder = SlotAttentionAE(**dict_args, resolution=resize)
 autoencoder.to(device)
 
 if args.pretrained:

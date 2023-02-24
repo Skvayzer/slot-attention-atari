@@ -158,7 +158,7 @@ def evaluate_step(model, env, repeats=8):
 
             print("img shape", img.shape, file=sys.stderr, flush=True)
             img = img.permute(2, 0, 1)
-            print("img ", img, max(img), min(img), file=sys.stderr, flush=True)
+            print("img ", img, torch.max(img), torch.min(img), file=sys.stderr, flush=True)
 
             wandb.log({
                 'orig images': [wandb.Image(img)],

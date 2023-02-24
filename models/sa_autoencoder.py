@@ -110,6 +110,8 @@ class SlotAttentionAE(nn.Module):
 
     def step(self, batch):
         result, _, kl_loss, _ = self.forward(batch)
+        print("result shape", result.shape, file=sys.stderr, flush=True)
+        print("batch shape", batch.shape, file=sys.stderr, flush=True)
 
         loss = F.mse_loss(result, batch)
         return loss, kl_loss

@@ -147,7 +147,8 @@ def evaluate_step(model, env, repeats=8):
         img = env.render()
         done = False
         while not done:
-            img = torch.Tensor(img).to(device).transpose(2, 0, 1)
+            img = torch.Tensor(img).to(device)
+            print("img shape", img.shape)
             with torch.no_grad():
                 model.validation_step(img.unsqueeze(dim=0))
             action = env.action_space.sample()

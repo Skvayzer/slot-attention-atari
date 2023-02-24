@@ -67,11 +67,11 @@ class SlotAttentionAE(nn.Module):
             nn.ReLU(),
             nn.Linear(hidden_size, slot_size)
         )
-        self.slots_lin = nn.Linear(16 * len(nums) + 64, hidden_size)
 
         self.slot_attention = SlotAttentionBase(num_slots=num_slots, iters=num_iters, dim=slot_size,
                                                 hidden_dim=slot_size * 2)
         if self.quantization:
+            self.slots_lin = nn.Linear(16 * len(nums) + 64, hidden_size)
             self.coord_quantizer = CoordQuantizer(nums)
         self.automatic_optimization = False
         self.num_steps = num_steps

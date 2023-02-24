@@ -266,6 +266,7 @@ wandb_logger = WandbLogger(project=project_name, name=f'{args.task}: nums {args.
 
 monitor = 'Validation MSE'
 autoencoder = SlotAttentionAE(**dict_args, log=wandb_logger)
+autoencoder.to(device)
 
 if args.pretrained:
     state_dict = torch.load(args.sa_state_dict)['state_dict']

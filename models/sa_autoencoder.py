@@ -20,7 +20,7 @@ class SlotAttentionAE(nn.Module):
     """
 
     def __init__(self,
-                 resolution=(128, 128),
+                 resolution=(105, 80),
                  num_slots=6,
                  num_iters=3,
                  in_channels=3,

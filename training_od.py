@@ -115,7 +115,7 @@ class Memory:
         images = torch.Tensor(self.images)[idx].to(device)
         print("batch shape", images.shape, file=sys.stderr, flush=True)
         images = images.permute(0, 3, 2, 1)
-        images = F.resize(images, (128, 128)).permute(0, 1, 3, 2)
+        images = F.resize(images, (105, 80)).permute(0, 1, 3, 2)
         print("batch shape", images.shape, file=sys.stderr, flush=True)
 
         return images
@@ -154,7 +154,7 @@ def evaluate_step(model, env, repeats=8):
             img = torch.Tensor(img).to(device)
             print("img shape", img.shape, file=sys.stderr, flush=True)
             img = img.permute(2, 1, 0)
-            img = F.resize(img, (128, 128)).permute(0, 2, 1)
+            img = F.resize(img, (105, 80)).permute(0, 2, 1)
             print("img shape", img.shape, file=sys.stderr, flush=True)
 
             with torch.no_grad():

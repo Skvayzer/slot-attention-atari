@@ -158,8 +158,10 @@ def evaluate_step(model, env, repeats=8):
 
             print("img shape", img.shape, file=sys.stderr, flush=True)
             img = img.permute(2, 1, 0)
+            print("img ", img, file=sys.stderr, flush=True)
+
             wandb.log({
-                'orig images': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(img, -1, 1)],
+                'orig images': [wandb.Image(img)],
             })
             img = torchvision.transforms.CenterCrop((160, 160))(img)
             img = F.resize(img, resize) #.permute(0, 2, 1)

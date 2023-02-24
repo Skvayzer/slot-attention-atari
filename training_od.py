@@ -157,7 +157,7 @@ def evaluate_step(model, env, repeats=8):
             img = torch.Tensor(img).to(device)
 
             print("img shape", img.shape, file=sys.stderr, flush=True)
-            img = img.permute(2, 1, 0)
+            img = img.permute(2, 0, 1)
             print("img ", img, file=sys.stderr, flush=True)
 
             wandb.log({
@@ -176,7 +176,7 @@ def evaluate_step(model, env, repeats=8):
 
 
 def train_loop(min_episodes=100, update_step=10, batch_size=64,
-         num_episodes=3000, seed=42, max_memory_size=50000, measure_step=100,
+         num_episodes=3000, seed=42, max_memory_size=50000, measure_step=1000,
         env_name='ALE/Seaquest-v5', horizon=np.inf):
     """
     :param gamma: reward discount factor

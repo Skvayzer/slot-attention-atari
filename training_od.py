@@ -114,6 +114,9 @@ class Memory:
         idx = random.sample(range(0, n-1), batch_size)
         images = torch.Tensor(self.images)[idx].to(device)
         print("batch shape", images.shape, file=sys.stderr, flush=True)
+        images = images.permute(0, 3, 2, 1)
+        images = F.resize(images, (128, 128)).permute(0, 1, 3, 2)
+        print("batch shape", images.shape, file=sys.stderr, flush=True)
 
         return images
         # return torch.Tensor(self.state)[idx].to(device), torch.LongTensor(self.action)[idx].to(device), \
@@ -157,7 +160,7 @@ def evaluate_step(model, env, repeats=8):
             with torch.no_grad():
                 model.validation_step(img.unsqueeze(dim=0))
             action = env.action_space.sample()
-            done = env.step(action)
+            state, reward, done, _, _ = env.step(action)
             img = env.render()
     model.train()
 
@@ -220,8 +223,8 @@ def train_loop(min_episodes=100, update_step=10, batch_size=64,
         while not done:
             i += 1
             action = env.action_space.sample()
-            done = env.step(action)
-            print("done???", done, file=sys.stderr, flush=True)
+            state, reward, done, _, _ = env.step(action)
+            # print("done???", done, file=sys.stderr, flush=True)
 
             if i > horizon:
                 done = True

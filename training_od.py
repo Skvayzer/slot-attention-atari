@@ -288,8 +288,8 @@ def train_loop(min_episodes=20, update_step=2, batch_size=64, update_repeats=50,
     optimizer = torch.optim.AdamW(autoencoder.parameters(), lr=autoencoder.lr)
     scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
 
-    train_memory = generate_memory(env, episodes=200)
-    val_memory = generate_memory(env, episodes=20)
+    train_memory = generate_memory(env, episodes=100, max_memory_size=3200)
+    val_memory = generate_memory(env, episodes=10, max_memory_size=640)
     val_memory.preprocess()
     train_memory.preprocess()
     for epoch in range(2000):

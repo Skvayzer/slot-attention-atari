@@ -185,7 +185,7 @@ def evaluate_step(model, env, repeats=8):
     model.train()
 
 
-def train_loop(min_episodes=1, update_step=10, batch_size=64,
+def train_loop(min_episodes=20, update_step=2, batch_size=64, update_repeats=50, render_step=5,
          num_episodes=3000, seed=42, max_memory_size=50000, measure_step=1,
         env_name='ALE/Seaquest-v5', horizon=np.inf):
     """
@@ -250,11 +250,14 @@ def train_loop(min_episodes=1, update_step=10, batch_size=64,
             if i > horizon:
                 done = True
 
-            img = env.render()
-            # save state, action, reward sequence
-            memory.update(img)
+            if i % render_step == 0:
+                img = env.render()
+                # save state, action, reward sequence
+                memory.update(img)
 
-            train_step(batch_size, autoencoder, optimizer, scheduler, memory)
+        if episode >= min_episodes and episode % update_step == 0:
+            for _ in range(update_repeats):
+                train_step(batch_size, autoencoder, optimizer, scheduler, memory)
 
         scheduler.step()
         wandb.log({'lr': scheduler.get_last_lr()[0]})

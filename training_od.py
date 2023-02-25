@@ -181,7 +181,7 @@ def evaluate_step(model, env, repeats=8):
     model.train()
 
 
-def train_loop(min_episodes=100, update_step=10, batch_size=64,
+def train_loop(min_episodes=1, update_step=10, batch_size=64,
          num_episodes=3000, seed=42, max_memory_size=50000, measure_step=1,
         env_name='ALE/Seaquest-v5', horizon=np.inf):
     """
@@ -250,11 +250,7 @@ def train_loop(min_episodes=100, update_step=10, batch_size=64,
             # save state, action, reward sequence
             memory.update(img)
 
-        if episode >= min_episodes and episode % update_step == 0:
-            train_step(batch_size, autoencoder, optimizer, scheduler, memory)
-
-
-        # update learning rate and eps
+        train_step(batch_size, autoencoder, optimizer, scheduler, memory)
 
 
 # ------------------------------------------------------------

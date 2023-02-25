@@ -113,19 +113,23 @@ class Memory:
     def __len__(self):
         return len(self.images)
 
+    def preprocess(self):
+        print("Preprocessing", file=sys.stderr, flush=True)
+        images = torch.Tensor(self.images).to(device).float() / 255
+        images = images * 2 - 1
+        images = images.permute(0, 3, 2, 1)
+        images = torchvision.transforms.CenterCrop((160, 160))(images)
+        images = F.resize(images, resize).permute(0, 1, 3, 2)
+        print("batch shape", images.shape, file=sys.stderr, flush=True)
+        self.images = images
     def sample(self, batch_size):
         """
         sample "batch_size" many (state, action, reward, next state, is_done) datapoints.
         """
         n = len(self.images)
         idx = random.sample(range(0, n-1), batch_size)
-        images = torch.Tensor(self.images)[idx].to(device).float() / 255
-        images = images*2 - 1
-        print("batch shape", images.shape, file=sys.stderr, flush=True)
-        images = images.permute(0, 3, 2, 1)
-        images = torchvision.transforms.CenterCrop((160, 160))(images)
-        images = F.resize(images, resize).permute(0, 1, 3, 2)
-        print("batch shape", images.shape, file=sys.stderr, flush=True)
+        images = self.images[idx]
+
 
 
 
@@ -142,14 +146,14 @@ class Memory:
         self.is_done.clear()
 
 
-def train_step(batch_size, model, optimizer, scheduler, memory):
+def train_step(batch_size, model, optimizer, memory):
     model.train()
     print("Batch", file=sys.stderr, flush=True)
 
     # states, actions, next_states, rewards, is_done = memory.sample(batch_size)
     images = memory.sample(batch_size)
 
-    loss = model.training_step(images, optimizer, scheduler)
+    loss = model.training_step(images, optimizer)
     return loss
 
 
@@ -210,8 +214,9 @@ def evaluate_step(model, env, val_memory):
 
     model.train()
 
-def generate_val_memory(env, episodes=20, max_memory_size=20000):
-    val_memory = Memory(max_memory_size)
+
+def generate_train_memory(env, episodes=100, max_memory_size=20000):
+    train_memory = Memory(max_memory_size)
     for _ in range(episodes):
         state = env.reset()
 
@@ -220,12 +225,29 @@ def generate_val_memory(env, episodes=20, max_memory_size=20000):
         # while not done:
         i = 0
         while not done:
-            val_memory.update(img)
+            train_memory.update(img)
             action = env.action_space.sample()
             state, reward, done, _, _ = env.step(action)
             img = env.render()
 
-    return val_memory
+    return train_memory
+
+def generate_memory(env, episodes=20, max_memory_size=20000):
+    memory = Memory(max_memory_size)
+    for _ in range(episodes):
+        state = env.reset()
+
+        img = env.render()
+        done = False
+        # while not done:
+        i = 0
+        while not done:
+            memory.update(img)
+            action = env.action_space.sample()
+            state, reward, done, _, _ = env.step(action)
+            img = env.render()
+
+    return memory
 
 def train_loop(min_episodes=20, update_step=2, batch_size=64, update_repeats=50, render_step=5,
          num_episodes=3000, seed=42, max_memory_size=50000, measure_step=1,
@@ -266,43 +288,51 @@ def train_loop(min_episodes=20, update_step=2, batch_size=64, update_repeats=50,
     optimizer = torch.optim.AdamW(autoencoder.parameters(), lr=autoencoder.lr)
     scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
 
-    memory = Memory(max_memory_size)
-    val_memory = generate_val_memory(env)
+    train_memory = generate_memory(env, episodes=200)
+    val_memory = generate_memory(env, episodes=20)
+    val_memory.preprocess()
+    train_memory.preprocess()
+    for epoch in range(2000):
+        for batch in range(100):
+            train_step(batch_size, autoencoder, optimizer, train_memory)
+        scheduler.step()
+        wandb.log({'lr': scheduler.get_last_lr()[0]})
+        evaluate_step(autoencoder, env, val_memory)
 
-    for episode in range(num_episodes):
-        # display the performance
-        if episode >= min_episodes and episode % measure_step == 0:
-            evaluate_step(autoencoder, env, val_memory)
-        wandb.log({"Episode": episode})
-            # wandb.log({"lr": scheduler.get_lr()[0]})
-
-        state = env.reset()
-        # memory.state.append(state)
-        img = env.render()
-        memory.update(img)
-
-        done = False
-        i = 0
-        while not done:
-        # for i in range(640):
-            i += 1
-            action = env.action_space.sample()
-            state, reward, done, _, _ = env.step(action)
-            # print("done???", done, file=sys.stderr, flush=True)
-
-            if i > horizon:
-                done = True
-
-            if i % render_step == 0:
-                img = env.render()
-                # save state, action, reward sequence
-                memory.update(img)
-
-        if episode >= min_episodes and episode % update_step == 0:
-            for _ in range(update_repeats):
-                train_step(batch_size, autoencoder, optimizer, scheduler, memory)
-            scheduler.step()
-            wandb.log({'lr': scheduler.get_last_lr()[0]})
+    # for episode in range(num_episodes):
+    #     # display the performance
+    #     if episode >= min_episodes and episode % measure_step == 0:
+    #         evaluate_step(autoencoder, env, val_memory)
+    #     wandb.log({"Episode": episode})
+    #         # wandb.log({"lr": scheduler.get_lr()[0]})
+    #
+    #     state = env.reset()
+    #     # memory.state.append(state)
+    #     img = env.render()
+    #     memory.update(img)
+    #
+    #     done = False
+    #     i = 0
+    #     while not done:
+    #     # for i in range(640):
+    #         i += 1
+    #         action = env.action_space.sample()
+    #         state, reward, done, _, _ = env.step(action)
+    #         # print("done???", done, file=sys.stderr, flush=True)
+    #
+    #         if i > horizon:
+    #             done = True
+    #
+    #         if i % render_step == 0:
+    #             img = env.render()
+    #             # save state, action, reward sequence
+    #             memory.update(img)
+    #
+    #     if episode >= min_episodes and episode % update_step == 0:
+    #         for _ in range(update_repeats):
+    #             train_step(batch_size, autoencoder, optimizer, memory)
+    #         scheduler.step()
+    #         wandb.log({'lr': scheduler.get_last_lr()[0]})
 
 
 

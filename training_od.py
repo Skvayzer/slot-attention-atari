@@ -230,7 +230,7 @@ def train_loop(min_episodes=20, update_step=2, batch_size=64, update_repeats=50,
         # display the performance
         if episode >= min_episodes and episode % measure_step == 0:
             evaluate_step(autoencoder, env)
-            wandb.log({"Episode": episode})
+        wandb.log({"Episode": episode})
             # wandb.log({"lr": scheduler.get_lr()[0]})
 
         state = env.reset()

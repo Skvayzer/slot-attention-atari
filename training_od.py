@@ -96,6 +96,7 @@ class Memory:
         self.action = collections.deque(maxlen=len)
         self.is_done = collections.deque(maxlen=len)
 
+
     def update(self, img=None, state=None, action=None, reward=None, done=None):
 
         self.images.append(img)
@@ -108,6 +109,9 @@ class Memory:
             self.action.append(action)
             self.rewards.append(reward)
             self.is_done.append(done)
+
+    def __len__(self):
+        return len(self.images)
 
     def sample(self, batch_size):
         """
@@ -236,8 +240,8 @@ def train_loop(min_episodes=1, update_step=10, batch_size=64,
 
         done = False
         i = 0
-        # while not done:
-        for i in range(640):
+        while not done:
+        # for i in range(640):
             i += 1
             action = env.action_space.sample()
             state, reward, done, _, _ = env.step(action)
@@ -250,8 +254,10 @@ def train_loop(min_episodes=1, update_step=10, batch_size=64,
             # save state, action, reward sequence
             memory.update(img)
 
-        train_step(batch_size, autoencoder, optimizer, scheduler, memory)
+            train_step(batch_size, autoencoder, optimizer, scheduler, memory)
 
+        scheduler.step()
+        wandb.log({'lr': scheduler.get_last_lr()[0]})
 
 # ------------------------------------------------------------
 # Logger

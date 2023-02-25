@@ -222,16 +222,16 @@ def train_loop(min_episodes=20, update_step=2, batch_size=64, update_repeats=50,
     env.seed(seed)
 
     optimizer = torch.optim.AdamW(autoencoder.parameters(), lr=autoencoder.lr)
-    scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=0.5)
+    scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
 
     memory = Memory(max_memory_size)
 
     for episode in range(num_episodes):
         # display the performance
-        if episode % measure_step == 0:
+        if episode >= min_episodes and episode % measure_step == 0:
             evaluate_step(autoencoder, env)
             wandb.log({"Episode": episode})
-            wandb.log({"lr": scheduler.get_lr()[0]})
+            # wandb.log({"lr": scheduler.get_lr()[0]})
 
         state = env.reset()
         # memory.state.append(state)
@@ -258,9 +258,10 @@ def train_loop(min_episodes=20, update_step=2, batch_size=64, update_repeats=50,
         if episode >= min_episodes and episode % update_step == 0:
             for _ in range(update_repeats):
                 train_step(batch_size, autoencoder, optimizer, scheduler, memory)
+            scheduler.step()
+            wandb.log({'lr': scheduler.get_last_lr()[0]})
 
-        scheduler.step()
-        wandb.log({'lr': scheduler.get_last_lr()[0]})
+
 
 # ------------------------------------------------------------
 # Logger

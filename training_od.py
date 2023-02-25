@@ -21,7 +21,7 @@ import torchvision.transforms.functional as F
 import collections
 import wandb
 
-
+from random import randrange
 
 import gym
 from ale_py.roms import Seaquest
@@ -123,6 +123,7 @@ class Memory:
         images = images*2 - 1
         print("batch shape", images.shape, file=sys.stderr, flush=True)
         images = images.permute(0, 3, 2, 1)
+        images = torchvision.transforms.CenterCrop((160, 160))(images)
         images = F.resize(images, resize).permute(0, 1, 3, 2)
         print("batch shape", images.shape, file=sys.stderr, flush=True)
 
@@ -152,42 +153,79 @@ def train_step(batch_size, model, optimizer, scheduler, memory):
     return loss
 
 
-def evaluate_step(model, env, repeats=8):
+# def evaluate_step(model, env, repeats=8):
+#     """
+#     Runs a greedy policy with respect to the current Q-Network for "repeats" many episodes. Returns the average
+#     episode reward.
+#     """
+#     model.eval()
+#     images = torch.empty((16, 3, 128, 128))
+#
+#     for _ in range(repeats):
+#         state = env.reset()
+#
+#         img = env.render()
+#         done = False
+#         # while not done:
+#         playtime = randrange(128)
+#         i = 0
+#         episode_imgs = []
+#         while i < playtime and not done:
+#
+#             img = torch.Tensor(img).to(device).float() / 255
+#             img = img * 2 - 1
+#             print("img shape", img.shape, file=sys.stderr, flush=True)
+#             img = img.permute(2, 0, 1)
+#             print("img ", img, torch.max(img), torch.min(img), file=sys.stderr, flush=True)
+#
+#
+#
+#             img = F.resize(img, resize) #.permute(0, 2, 1)
+#             print("img shape", img.shape, file=sys.stderr, flush=True)
+#             images[i] = img
+#             action = env.action_space.sample()
+#             state, reward, done, _, _ = env.step(action)
+#             img = env.render()
+#
+#
+#     with torch.no_grad():
+#         model.validation_step(images)
+#
+#     # wandb.log({
+#     #     'orig images': [wandb.Image(img) for img in images],
+#     # })
+#     model.train()
+
+def evaluate_step(model, env, val_memory):
     """
     Runs a greedy policy with respect to the current Q-Network for "repeats" many episodes. Returns the average
     episode reward.
     """
     model.eval()
-    images = torch.empty((64, 3, 128, 128))
-    for _ in range(repeats):
-        state = env.reset()
-        img = env.render()
-        done = False
-        # while not done:
-        for i in range(64):
-            img = torch.Tensor(img).to(device).float() / 255
-            img = img * 2 - 1
-            print("img shape", img.shape, file=sys.stderr, flush=True)
-            img = img.permute(2, 0, 1)
-            print("img ", img, torch.max(img), torch.min(img), file=sys.stderr, flush=True)
 
-
-            img = torchvision.transforms.CenterCrop((160, 160))(img)
-            img = F.resize(img, resize) #.permute(0, 2, 1)
-            print("img shape", img.shape, file=sys.stderr, flush=True)
-            images[i] = img
-            action = env.action_space.sample()
-            state, reward, done, _, _ = env.step(action)
-            img = env.render()
+    images = val_memory.sample(64)
 
     with torch.no_grad():
         model.validation_step(images)
 
-    # wandb.log({
-    #     'orig images': [wandb.Image(img) for img in images],
-    # })
     model.train()
 
+def generate_val_memory(env, episodes=20, max_memory_size=20000):
+    val_memory = Memory(max_memory_size)
+    for _ in range(episodes):
+        state = env.reset()
+
+        img = env.render()
+        done = False
+        # while not done:
+        i = 0
+        while not done:
+            val_memory.update(img)
+            action = env.action_space.sample()
+            state, reward, done, _, _ = env.step(action)
+            img = env.render()
+
+    return val_memory
 
 def train_loop(min_episodes=20, update_step=2, batch_size=64, update_repeats=50, render_step=5,
          num_episodes=3000, seed=42, max_memory_size=50000, measure_step=1,
@@ -229,11 +267,12 @@ def train_loop(min_episodes=20, update_step=2, batch_size=64, update_repeats=50,
     scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
 
     memory = Memory(max_memory_size)
+    val_memory = generate_val_memory(env)
 
     for episode in range(num_episodes):
         # display the performance
         if episode >= min_episodes and episode % measure_step == 0:
-            evaluate_step(autoencoder, env)
+            evaluate_step(autoencoder, env, val_memory)
         wandb.log({"Episode": episode})
             # wandb.log({"lr": scheduler.get_lr()[0]})
 

@@ -136,7 +136,7 @@ class SlotAttentionAE(nn.Module):
         if self.quantization:
             wandb.log({'Validation KL': kl_loss})
 
-        imgs = batch
+        imgs = batch[:8]
 
         result, recons, _, pred_masks = self.forward(imgs)
         # print("\n\nATTENTION! imgs: ", imgs.shape, file=sys.stderr, flush=True)

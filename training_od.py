@@ -158,30 +158,34 @@ def evaluate_step(model, env, repeats=8):
     episode reward.
     """
     model.eval()
+    images = torch.empty((64, 3, 128, 128))
     for _ in range(repeats):
         state = env.reset()
         img = env.render()
         done = False
         # while not done:
-        for i in range(2):
+        for i in range(64):
             img = torch.Tensor(img).to(device).float() / 255
             img = img * 2 - 1
             print("img shape", img.shape, file=sys.stderr, flush=True)
             img = img.permute(2, 0, 1)
             print("img ", img, torch.max(img), torch.min(img), file=sys.stderr, flush=True)
 
-            wandb.log({
-                'orig images': [wandb.Image(img)],
-            })
+
             img = torchvision.transforms.CenterCrop((160, 160))(img)
             img = F.resize(img, resize) #.permute(0, 2, 1)
             print("img shape", img.shape, file=sys.stderr, flush=True)
-
-            with torch.no_grad():
-                model.validation_step(img.unsqueeze(dim=0))
+            images[i] = img
             action = env.action_space.sample()
             state, reward, done, _, _ = env.step(action)
             img = env.render()
+
+    with torch.no_grad():
+        model.validation_step(images)
+
+    # wandb.log({
+    #     'orig images': [wandb.Image(img) for img in images],
+    # })
     model.train()
 
 

@@ -218,7 +218,7 @@ def train_loop(min_episodes=100, update_step=10, batch_size=64,
     env.seed(seed)
 
     optimizer = torch.optim.AdamW(autoencoder.parameters(), lr=autoencoder.lr)
-    scheduler = lr_scheduler.OneCycleLR(optimizer, max_lr=autoencoder.lr, total_steps=int(autoencoder.num_steps), pct_start=0.05)
+    scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=0.5)
 
     memory = Memory(max_memory_size)
 

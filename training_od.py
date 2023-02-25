@@ -139,6 +139,8 @@ class Memory:
 
 def train_step(batch_size, model, optimizer, scheduler, memory):
     model.train()
+    print("Batch", file=sys.stderr, flush=True)
+
     # states, actions, next_states, rewards, is_done = memory.sample(batch_size)
     images = memory.sample(batch_size)
 
@@ -156,7 +158,8 @@ def evaluate_step(model, env, repeats=8):
         state = env.reset()
         img = env.render()
         done = False
-        while not done:
+        # while not done:
+        for i in range(2):
             img = torch.Tensor(img).to(device).float() / 255
             img = img * 2 - 1
             print("img shape", img.shape, file=sys.stderr, flush=True)
@@ -179,7 +182,7 @@ def evaluate_step(model, env, repeats=8):
 
 
 def train_loop(min_episodes=100, update_step=10, batch_size=64,
-         num_episodes=3000, seed=42, max_memory_size=50000, measure_step=1000,
+         num_episodes=3000, seed=42, max_memory_size=50000, measure_step=1,
         env_name='ALE/Seaquest-v5', horizon=np.inf):
     """
     :param gamma: reward discount factor
@@ -233,7 +236,8 @@ def train_loop(min_episodes=100, update_step=10, batch_size=64,
 
         done = False
         i = 0
-        while not done:
+        # while not done:
+        for i in range(640):
             i += 1
             action = env.action_space.sample()
             state, reward, done, _, _ = env.step(action)
@@ -251,7 +255,6 @@ def train_loop(min_episodes=100, update_step=10, batch_size=64,
 
 
         # update learning rate and eps
-        scheduler.step()
 
 
 # ------------------------------------------------------------
@@ -263,12 +266,6 @@ wandb.login(key='c84312b58e94070d15277f8a5d58bb72e57be7fd')
 # Load dataset
 # ------------------------------------------------------------
 dataset = args.dataset
-
-
-
-
-
-
 
 # ------------------------------------------------------------
 # Load model
@@ -296,7 +293,7 @@ if args.pretrained:
 # ------------------------------------------------------------
 # Trainer
 # ------------------------------------------------------------
-# trainer parameters
+# trainer parametersПодозритель
 accelerator = args.device
 # devices = [int(args.devices)]
 gpus = [0]

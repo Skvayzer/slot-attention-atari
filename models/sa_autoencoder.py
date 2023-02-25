@@ -117,23 +117,21 @@ class SlotAttentionAE(nn.Module):
         return loss, kl_loss
 
     def training_step(self, batch, optimizer, sch):
-        self.train()
         loss, kl_loss = self.step(batch)
         wandb.log({'Training MSE': loss})
         if self.quantization:
             wandb.log({'Training KL': kl_loss})
 
         loss = loss + kl_loss * self.beta
-        optimizer.zero_grad()
+
         loss.backward()
         optimizer.step()
+        optimizer.zero_grad()
         sch.step()
-
         wandb.log({'lr': sch.get_last_lr()[0]})
         return loss
 
     def validation_step(self, batch):
-        self.eval()
         loss, kl_loss = self.step(batch)
         wandb.log({'Validation MSE': loss})
         if self.quantization:

@@ -280,7 +280,6 @@ def train_loop(min_episodes=20, update_step=2, batch_size=64, update_repeats=50,
     """
 
 
-
     env = gym.make(env_name, render_mode='rgb_array')
     torch.manual_seed(seed)
     env.seed(seed)

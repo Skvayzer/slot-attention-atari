@@ -84,7 +84,7 @@ class SlotAttentionBase(nn.Module):
 
         for _ in range(self.iters):
             slots = self.step(slots, k, v, b, n, d, device, n_s)
-        #slots = self.step(slots.detach(), k, v, b, n, d, device, n_s)
+        slots = self.step(slots.detach(), k, v, b, n, d, device, n_s)
 
         return slots
     

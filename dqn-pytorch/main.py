@@ -101,7 +101,7 @@ def train(env, n_episodes, render=False):
         state = get_state(obs)
         total_reward = 0.0
         for t in count():
-            print('t:', t, file=sys.stderr, flush=True)
+            # print('t:', t, file=sys.stderr, flush=True)
 
             action = select_action(state)
 
@@ -109,8 +109,8 @@ def train(env, n_episodes, render=False):
                 env.render()
 
             obs, reward, done, info = env.step(action)
-            print(obs, reward, done, info,
-                  file=sys.stderr, flush=True)
+            # print(obs, reward, done, info,
+            #       file=sys.stderr, flush=True)
 
             total_reward += reward
 

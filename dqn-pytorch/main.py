@@ -138,7 +138,7 @@ def train(env, n_episodes, render=False):
     return
 
 def test(env, n_episodes, policy, render=True):
-    env = gym.wrappers.Monitor(env, '../../videos/' + 'dqn_sequest_video')
+    env = gym.wrappers.Monitor(env, '/home/csmirnov/sa_atari/videos/' + 'dqn_sequest_video')
     for episode in range(n_episodes):
         obs = env.reset()
         state = get_state(obs)
@@ -205,7 +205,7 @@ if __name__ == '__main__':
     
     # train model
     train(env, 10)
-    torch.save(policy_net, "dqn_seaquest_model")
-    policy_net = torch.load("dqn_seaquest_model")
+    torch.save(policy_net, "/home/csmirnov/sa_atari/dqn_seaquest_model")
+    policy_net = torch.load("/home/csmirnov/sa_atari/dqn_seaquest_model")
     test(env, 1, policy_net, render=False)
 

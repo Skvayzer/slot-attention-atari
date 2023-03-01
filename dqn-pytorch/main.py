@@ -95,16 +95,22 @@ def train(env, n_episodes, render=False):
     print('Training started', file=sys.stderr, flush=True)
 
     for episode in range(n_episodes):
+        print('Episode', episode, file=sys.stderr, flush=True)
+
         obs = env.reset()
         state = get_state(obs)
         total_reward = 0.0
         for t in count():
+            print('t:', t, file=sys.stderr, flush=True)
+
             action = select_action(state)
 
             if render:
                 env.render()
 
             obs, reward, done, info = env.step(action)
+            print(obs, reward, done, info,
+                  file=sys.stderr, flush=True)
 
             total_reward += reward
 

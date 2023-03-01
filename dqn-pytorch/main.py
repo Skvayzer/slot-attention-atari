@@ -18,6 +18,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import torchvision.transforms as T
+import wandb
 
 from ale_py.roms import Seaquest
 
@@ -134,6 +135,9 @@ def train(env, n_episodes, render=False):
                 break
         # if episode % 20 == 0:
         print('Total steps: {} \t Episode: {}/{} \t Total reward: {}'.format(steps_done, episode, t, total_reward), file=sys.stderr, flush=True)
+        wandb.log({'Episode': episode,
+                   'Total reward': total_reward,
+                   'Steps done': steps_done})
     env.close()
     return
 
@@ -172,6 +176,8 @@ if __name__ == '__main__':
     # set device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    wandb.init(project='atari test')
+    
     # hyperparameters
     BATCH_SIZE = 32
     GAMMA = 0.99
@@ -189,7 +195,7 @@ if __name__ == '__main__':
     steps_done = 0
 
     # create environment
-    env = gym.make("PongNoFrameskip-v4")
+    env = gym.make("Seaquest-v4")
     env = make_env(env)
 
     # create networks
@@ -204,7 +210,7 @@ if __name__ == '__main__':
     memory = ReplayMemory(MEMORY_SIZE)
     
     # train model
-    train(env, 3000)
+    train(env, 5000)
     torch.save(policy_net, "/home/sa_atari/dqn_seaquest_model")
     policy_net = torch.load("/home/sa_atari/dqn_seaquest_model")
     # test(env, 1, policy_net, render=False)

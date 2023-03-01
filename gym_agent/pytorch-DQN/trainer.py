@@ -37,7 +37,7 @@ class Trainer:
             epsilon = self.epsilon_by_frame(fr)
             action = self.agent.act(state, epsilon)
 
-            next_state, reward, done, _ = self.env.step(action)
+            next_state, reward, done, _, _ = self.env.step(action)
             self.agent.buffer.add(state, action, reward, next_state, done)
 
             state = next_state

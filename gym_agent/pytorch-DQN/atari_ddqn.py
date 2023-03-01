@@ -11,6 +11,13 @@ from core.util import get_class_attr_val
 from model import CnnDQN
 from trainer import Trainer
 
+
+from ale_py.roms import Seaquest
+
+from ale_py import ALEInterface
+ale = ALEInterface()
+ale.loadROM(Seaquest)
+
 class CnnDDQNAgent:
     def __init__(self, config: Config):
         self.config = config
@@ -112,7 +119,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('--train', dest='train', action='store_true', help='train model')
-    parser.add_argument('--env', default='PongNoFrameskip-v4', type=str, help='gym environment')
+    parser.add_argument('--env', default='ALE/Seaquest-v5', type=str, help='gym environment')
     parser.add_argument('--test', dest='test', action='store_true', help='test model')
     parser.add_argument('--retrain', dest='retrain', action='store_true', help='retrain model')
     parser.add_argument('--model_path', type=str, help='if test or retrain, import the model')

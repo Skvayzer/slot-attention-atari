@@ -1,4 +1,5 @@
 import copy
+import sys
 from collections import namedtuple
 from itertools import count
 import math
@@ -124,7 +125,7 @@ def train(env, n_episodes, render=False):
             if done:
                 break
         if episode % 20 == 0:
-                print('Total steps: {} \t Episode: {}/{} \t Total reward: {}'.format(steps_done, episode, t, total_reward))
+                print('Total steps: {} \t Episode: {}/{} \t Total reward: {}'.format(steps_done, episode, t, total_reward), file=sys.stderr, flush=True)
     env.close()
     return
 
@@ -153,7 +154,7 @@ def test(env, n_episodes, policy, render=True):
             state = next_state
 
             if done:
-                print("Finished Episode {} with reward {}".format(episode, total_reward))
+                print("Finished Episode {} with reward {}".format(episode, total_reward), file=sys.stderr, flush=True)
                 break
 
     env.close()

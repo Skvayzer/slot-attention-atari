@@ -39,7 +39,7 @@ def select_action(state):
         with torch.no_grad():
             return policy_net(state.to('cuda')).max(1)[1].view(1,1)
     else:
-        return torch.tensor([[random.randrange(4)]], device=device, dtype=torch.long)
+        return torch.tensor([[random.randrange(env.action_space.n)]], device=device, dtype=torch.long)
 
     
 def optimize_model():
@@ -184,19 +184,21 @@ if __name__ == '__main__':
     INITIAL_MEMORY = 10000
     MEMORY_SIZE = 10 * INITIAL_MEMORY
 
-    # create networks
-    policy_net = DQN(n_actions=4).to(device)
-    target_net = DQN(n_actions=4).to(device)
-    target_net.load_state_dict(policy_net.state_dict())
 
-    # setup optimizer
-    optimizer = optim.Adam(policy_net.parameters(), lr=lr)
 
     steps_done = 0
 
     # create environment
     env = gym.make("Seaquest-v4")
     env = make_env(env)
+
+    # create networks
+    policy_net = DQN(n_actions=env.action_space.n).to(device)
+    target_net = DQN(n_actions=env.action_space.n).to(device)
+    target_net.load_state_dict(policy_net.state_dict())
+
+    # setup optimizer
+    optimizer = optim.Adam(policy_net.parameters(), lr=lr)
 
     # initialize replay memory
     memory = ReplayMemory(MEMORY_SIZE)

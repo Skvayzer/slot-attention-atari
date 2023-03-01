@@ -32,7 +32,7 @@ class Trainer:
         ep_num = 0
         is_win = False
 
-        state = self.env.reset()
+        state, _ = self.env.reset()
         for fr in range(pre_fr + 1, self.config.frames + 1):
             epsilon = self.epsilon_by_frame(fr)
             action = self.agent.act(state, epsilon)

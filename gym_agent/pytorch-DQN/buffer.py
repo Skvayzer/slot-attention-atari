@@ -8,6 +8,8 @@ class ReplayBuffer(object):
         self.buffer = []
 
     def add(self, s0, a, r, s1, done):
+        s0 = np.array(s0)
+        s1 = np.array(s1)
         if len(self.buffer) >= self.capacity:
             self.buffer.pop(0)
         self.buffer.append((s0[None, :], a, r, s1[None, :], done))

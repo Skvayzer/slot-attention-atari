@@ -2,7 +2,6 @@ import math
 
 import numpy as np
 from config import Config
-from core.logger import TensorBoardLogger
 from core.util import get_output_folder
 import wandb
 import sys

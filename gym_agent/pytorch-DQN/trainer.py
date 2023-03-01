@@ -38,6 +38,8 @@ class Trainer:
             action = self.agent.act(state, epsilon)
 
             next_state, reward, done, _, _ = self.env.step(action)
+            print("state", next_state, file=sys.stderr, flush=True)
+
             self.agent.buffer.add(state, action, reward, next_state, done)
 
             state = next_state

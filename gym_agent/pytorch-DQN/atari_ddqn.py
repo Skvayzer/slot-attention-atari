@@ -119,7 +119,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('--train', dest='train', action='store_true', help='train model')
-    parser.add_argument('--env', default='ALE/Seaquest-v5', type=str, help='gym environment')
+    parser.add_argument('--env', default='Seaquest-v0', type=str, help='gym environment')
     parser.add_argument('--test', dest='test', action='store_true', help='test model')
     parser.add_argument('--retrain', dest='retrain', action='store_true', help='retrain model')
     parser.add_argument('--model_path', type=str, help='if test or retrain, import the model')

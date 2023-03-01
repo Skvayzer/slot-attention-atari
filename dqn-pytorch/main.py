@@ -92,6 +92,8 @@ def get_state(obs):
     return state.unsqueeze(0)
 
 def train(env, n_episodes, render=False):
+    print('Training started', file=sys.stderr, flush=True)
+
     for episode in range(n_episodes):
         obs = env.reset()
         state = get_state(obs)
@@ -124,8 +126,8 @@ def train(env, n_episodes, render=False):
 
             if done:
                 break
-        if episode % 20 == 0:
-                print('Total steps: {} \t Episode: {}/{} \t Total reward: {}'.format(steps_done, episode, t, total_reward), file=sys.stderr, flush=True)
+        # if episode % 20 == 0:
+        print('Total steps: {} \t Episode: {}/{} \t Total reward: {}'.format(steps_done, episode, t, total_reward), file=sys.stderr, flush=True)
     env.close()
     return
 

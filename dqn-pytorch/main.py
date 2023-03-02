@@ -210,8 +210,8 @@ if __name__ == '__main__':
     memory = ReplayMemory(MEMORY_SIZE)
     
     # train model
-    train(env, 5000)
-    torch.save(policy_net, "/home/sa_atari/dqn_seaquest_model")
-    policy_net = torch.load("/home/sa_atari/dqn_seaquest_model")
+    train(env, 15000)
+    torch.save(policy_net, "/home/sa_atari/dqn_seaquest_model_15000")
+    policy_net = torch.load("/home/sa_atari/dqn_seaquest_model_15000")
     # test(env, 1, policy_net, render=False)
 

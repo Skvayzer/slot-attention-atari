@@ -228,7 +228,7 @@ if __name__ == '__main__':
     steps_done = 0
 
     # create environment
-    env = gym.make("Seaquest-v4")
+    env = gym.make("Seaquest-v0")
     env = make_env(env)
 
     # create networks

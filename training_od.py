@@ -217,6 +217,7 @@ def evaluate_step(model, env, val_memory):
 
 def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
     memory = Memory(max_memory_size)
+    i = 0
     for e in range(episodes):
         print(f"Memory Episode {e}", file=sys.stderr, flush=True)
 
@@ -225,15 +226,15 @@ def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
         # img = env.render()
         done = False
         # while not done:
-        i = 0
         while not done:
             # memory.update(state)
             action = env.action_space.sample()
             state, reward, done, _ = env.step(action)
             print("state shape", state.shape, file=sys.stderr, flush=True)
             state = torch.tensor(state).permute(2, 1, 0) / 255
-            save_image(state, os.path.join("/mnt/data/users_data/smirnov/sa_atari/datasets/seaquest", mode))
+            save_image(state, os.path.join("/mnt/data/users_data/smirnov/sa_atari/datasets/seaquest", mode, 'train_' + str(i) + '.png'))
             # img = env.render()
+            i+=1
 
     return memory
 

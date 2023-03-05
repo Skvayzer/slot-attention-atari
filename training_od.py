@@ -118,10 +118,11 @@ class Memory:
         images = torch.Tensor(self.images).to(device).float() / 255
         images = images * 2 - 1
         images = images.permute(0, 3, 2, 1)
-        images = torchvision.transforms.CenterCrop((160, 160))(images)
-        images = F.resize(images, resize).permute(0, 1, 3, 2)
+        # images = torchvision.transforms.CenterCrop((160, 160))(images)
+        # images = F.resize(images, resize).permute(0, 1, 3, 2)
         print("batch shape", images.shape, file=sys.stderr, flush=True)
         self.images = images
+
     def sample(self, batch_size):
         """
         sample "batch_size" many (state, action, reward, next state, is_done) datapoints.
@@ -129,9 +130,6 @@ class Memory:
         n = len(self.images)
         idx = random.sample(range(0, n-1), batch_size)
         images = self.images[idx]
-
-
-
 
         return images
         # return torch.Tensor(self.state)[idx].to(device), torch.LongTensor(self.action)[idx].to(device), \
@@ -214,7 +212,6 @@ def evaluate_step(model, env, val_memory):
 
     model.train()
 
-
 def generate_train_memory(env, episodes=100, max_memory_size=20000):
     train_memory = Memory(max_memory_size)
     for _ in range(episodes):
@@ -287,16 +284,20 @@ def train_loop(min_episodes=20, update_step=2, batch_size=64, update_repeats=50,
     optimizer = torch.optim.AdamW(autoencoder.parameters(), lr=autoencoder.lr)
     scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
 
-    train_memory = generate_memory(env, episodes=100, max_memory_size=3200)
-    val_memory = generate_memory(env, episodes=10, max_memory_size=640)
+    train_memory = generate_memory(env, episodes=100, max_memory_size=70000)
+    val_memory = generate_memory(env, episodes=50, max_memory_size=15000)
     val_memory.preprocess()
     train_memory.preprocess()
-    for epoch in range(2000):
-        for batch in range(100):
-            train_step(batch_size, autoencoder, optimizer, train_memory)
-        scheduler.step()
-        wandb.log({'lr': scheduler.get_last_lr()[0]})
-        evaluate_step(autoencoder, env, val_memory)
+
+    np.savez("/home/sa_atari/seaquest_train", images=train_memory.images)
+    np.savez("/home/sa_atari/seaquest_val", images=val_memory.images)
+
+    # for epoch in range(2000):
+    #     for batch in range(100):
+    #         train_step(batch_size, autoencoder, optimizer, train_memory)
+    #     scheduler.step()
+    #     wandb.log({'lr': scheduler.get_last_lr()[0]})
+    #     evaluate_step(autoencoder, env, val_memory)
 
     # for episode in range(num_episodes):
     #     # display the performance
@@ -388,7 +389,7 @@ if not len(args.from_checkpoint):
 #
 #     autoencoder.load_state_dict(state_dict=ckpt, strict=False)
 
-train_loop(env_name='Seaquest-v0')
+train_loop(env_name='Seaquest-v4')
 
 wandb.finish()
 

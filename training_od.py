@@ -231,8 +231,8 @@ def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
             action = env.action_space.sample()
             state, reward, done, _ = env.step(action)
             print("state shape", state.shape, file=sys.stderr, flush=True)
-            state = state.permute(2, 1, 0) / 255
-            save_image(torch.tensor(state), os.path.join("/mnt/data/users_data/smirnov/sa_atari/datasets/seaquest", mode))
+            state = torch.tensor(state).permute(2, 1, 0) / 255
+            save_image(state, os.path.join("/mnt/data/users_data/smirnov/sa_atari/datasets/seaquest", mode))
             # img = env.render()
 
     return memory

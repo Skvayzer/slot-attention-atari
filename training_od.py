@@ -224,7 +224,7 @@ def generate_train_memory(env, episodes=100, max_memory_size=20000):
         while not done:
             train_memory.update(state)
             action = env.action_space.sample()
-            state, reward, done, _, _ = env.step(action)
+            state, reward, done, _  = env.step(action)
             # img = env.render()
 
     return train_memory
@@ -241,7 +241,7 @@ def generate_memory(env, episodes=20, max_memory_size=20000):
         while not done:
             memory.update(state)
             action = env.action_space.sample()
-            state, reward, done, _, _ = env.step(action)
+            state, reward, done, _ = env.step(action)
             # img = env.render()
 
     return memory

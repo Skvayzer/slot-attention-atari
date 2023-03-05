@@ -200,7 +200,9 @@ if __name__ == '__main__':
 
     # create networks
     policy_net = DQN(n_actions=env.action_space.n).to(device)
+    policy_net = torch.load("/home/sa_atari/dqn_seaquest_model_15000")
     target_net = DQN(n_actions=env.action_space.n).to(device)
+
     target_net.load_state_dict(policy_net.state_dict())
 
     # setup optimizer
@@ -210,8 +212,8 @@ if __name__ == '__main__':
     memory = ReplayMemory(MEMORY_SIZE)
     
     # train model
-    train(env, 15000)
-    torch.save(policy_net, "/home/sa_atari/dqn_seaquest_model_15000")
-    policy_net = torch.load("/home/sa_atari/dqn_seaquest_model_15000")
+    train(env, 40000)
+    torch.save(policy_net, "/home/sa_atari/dqn_seaquest_model_40000")
+    # policy_net = torch.load("/home/sa_atari/dqn_seaquest_model_40000")
     # test(env, 1, policy_net, render=False)
 

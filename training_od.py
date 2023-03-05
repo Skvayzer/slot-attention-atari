@@ -23,7 +23,7 @@ import torchvision.transforms.functional as F
 import collections
 import wandb
 
-from dqn.models import *
+from dqn.models import DQN
 
 
 from random import randrange

@@ -115,9 +115,9 @@ class Memory:
 
     def preprocess(self):
         print("Preprocessing", file=sys.stderr, flush=True)
-        images = np.array(self.images).float() / 255
+        images = np.array(self.images) / 255
         images = images * 2 - 1
-        images = images.permute(0, 3, 2, 1)
+        # images = images.permute(0, 3, 2, 1)
         # images = torchvision.transforms.CenterCrop((160, 160))(images)
         # images = F.resize(images, resize).permute(0, 1, 3, 2)
         print("batch shape", images.shape, file=sys.stderr, flush=True)

@@ -217,15 +217,15 @@ def generate_train_memory(env, episodes=100, max_memory_size=20000):
     for _ in range(episodes):
         state = env.reset()
 
-        img = env.render()
+        # img = env.render()
         done = False
         # while not done:
         i = 0
         while not done:
-            train_memory.update(img)
+            train_memory.update(state)
             action = env.action_space.sample()
             state, reward, done, _, _ = env.step(action)
-            img = env.render()
+            # img = env.render()
 
     return train_memory
 
@@ -234,15 +234,15 @@ def generate_memory(env, episodes=20, max_memory_size=20000):
     for _ in range(episodes):
         state = env.reset()
 
-        img = env.render()
+        # img = env.render()
         done = False
         # while not done:
         i = 0
         while not done:
-            memory.update(img)
+            memory.update(state)
             action = env.action_space.sample()
             state, reward, done, _, _ = env.step(action)
-            img = env.render()
+            # img = env.render()
 
     return memory
 

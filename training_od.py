@@ -288,7 +288,8 @@ def train_loop(min_episodes=20, update_step=2, batch_size=64, update_repeats=50,
 
 
     policy_net = DQN(n_actions=env.action_space.n).to(device)
-    policy_net = torch.load("/home/sa_atari/dqn_seaquest_model_40000")
+    state_dict = torch.load("/home/sa_atari/dqn_seaquest_model_40000")
+    policy_net.load_state_dict(state_dict=state_dict, strict=False)
 
 
     train_memory = generate_memory(env, policy_net, episodes=70000, max_memory_size=50, mode='train')

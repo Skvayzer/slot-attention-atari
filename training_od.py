@@ -115,7 +115,7 @@ class Memory:
 
     def preprocess(self):
         print("Preprocessing", file=sys.stderr, flush=True)
-        images = torch.Tensor(self.images).to(device).float() / 255
+        images = torch.Tensor(np.array(self.images)).to(device).float() / 255
         images = images * 2 - 1
         images = images.permute(0, 3, 2, 1)
         # images = torchvision.transforms.CenterCrop((160, 160))(images)
@@ -231,7 +231,9 @@ def generate_train_memory(env, episodes=100, max_memory_size=20000):
 
 def generate_memory(env, episodes=20, max_memory_size=20000):
     memory = Memory(max_memory_size)
-    for _ in range(episodes):
+    for e in range(episodes):
+        print(f"Memory Episode {e}", file=sys.stderr, flush=True)
+
         state = env.reset()
 
         # img = env.render()

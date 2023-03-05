@@ -194,8 +194,8 @@ def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
             obs, reward, done, _ = env.step(action)
             state = get_state(obs)
 
-            if i % 4 == 0:
-                continue
+            # if i % 4 == 0:
+            #     continue
             # print("state shape", state.shape, file=sys.stderr, flush=True)
             img = torch.tensor(env.render(mode="rgb_array")).permute(2, 0, 1) / 255
             save_image(img, os.path.join("/mnt/data/users_data/smirnov/sa_atari/datasets/seaquest", mode, mode + '_' + str(i) + '.png'))

@@ -115,7 +115,7 @@ class Memory:
 
     def preprocess(self):
         print("Preprocessing", file=sys.stderr, flush=True)
-        images = torch.Tensor(np.array(self.images)).to(device).float() / 255
+        images = np.array(self.images).float() / 255
         images = images * 2 - 1
         images = images.permute(0, 3, 2, 1)
         # images = torchvision.transforms.CenterCrop((160, 160))(images)
@@ -287,11 +287,11 @@ def train_loop(min_episodes=20, update_step=2, batch_size=64, update_repeats=50,
     scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
 
     train_memory = generate_memory(env, episodes=100, max_memory_size=70000)
+    train_memory.preprocess()
+    np.savez("/home/sa_atari/seaquest_train", images=train_memory.images)
+
     val_memory = generate_memory(env, episodes=50, max_memory_size=15000)
     val_memory.preprocess()
-    train_memory.preprocess()
-
-    np.savez("/home/sa_atari/seaquest_train", images=train_memory.images)
     np.savez("/home/sa_atari/seaquest_val", images=val_memory.images)
 
     # for epoch in range(2000):

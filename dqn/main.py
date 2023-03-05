@@ -193,7 +193,7 @@ def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
             state, reward, done, _ = env.step(action)
             if i % 4 == 0:
                 continue
-            print("state shape", state.shape, file=sys.stderr, flush=True)
+            # print("state shape", state.shape, file=sys.stderr, flush=True)
             state = torch.tensor(state).permute(2, 0, 1) / 255
             save_image(state, os.path.join("/mnt/data/users_data/smirnov/sa_atari/datasets/seaquest", mode, mode + '_' + str(i) + '.png'))
             # img = env.render()
@@ -228,8 +228,8 @@ if __name__ == '__main__':
     steps_done = 0
 
     # create environment
-    env = gym.make("Seaquest-v0")
-    env = make_env(env)
+    env = gym.make("Seaquest-v4")
+    # env = make_env(env)
 
     # create networks
     policy_net = DQN(n_actions=env.action_space.n).to(device)

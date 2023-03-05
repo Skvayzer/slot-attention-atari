@@ -1,4 +1,4 @@
-
+import os
 import sys
 
 
@@ -11,6 +11,8 @@ import argparse
 
 from models import SlotAttentionAE
 from torch.optim import lr_scheduler
+
+from torchvision.utils import save_image
 
 import torch
 import numpy as np
@@ -212,24 +214,8 @@ def evaluate_step(model, env, val_memory):
 
     model.train()
 
-def generate_train_memory(env, episodes=100, max_memory_size=20000):
-    train_memory = Memory(max_memory_size)
-    for _ in range(episodes):
-        state = env.reset()
 
-        # img = env.render()
-        done = False
-        # while not done:
-        i = 0
-        while not done:
-            train_memory.update(state)
-            action = env.action_space.sample()
-            state, reward, done, _  = env.step(action)
-            # img = env.render()
-
-    return train_memory
-
-def generate_memory(env, episodes=20, max_memory_size=20000):
+def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
     memory = Memory(max_memory_size)
     for e in range(episodes):
         print(f"Memory Episode {e}", file=sys.stderr, flush=True)
@@ -241,9 +227,10 @@ def generate_memory(env, episodes=20, max_memory_size=20000):
         # while not done:
         i = 0
         while not done:
-            memory.update(state)
+            # memory.update(state)
             action = env.action_space.sample()
             state, reward, done, _ = env.step(action)
+            save_image(os.path.join("/mnt/data/users_data/smirnov/sa_atari/datasets/seaquest", mode))
             # img = env.render()
 
     return memory
@@ -286,13 +273,13 @@ def train_loop(min_episodes=20, update_step=2, batch_size=64, update_repeats=50,
     optimizer = torch.optim.AdamW(autoencoder.parameters(), lr=autoencoder.lr)
     scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
 
-    train_memory = generate_memory(env, episodes=100, max_memory_size=70000)
-    train_memory.preprocess()
-    np.savez("/home/sa_atari/seaquest_train", images=train_memory.images)
+    train_memory = generate_memory(env, episodes=50, max_memory_size=70000, mode='train')
+    # train_memory.preprocess()
+    # np.savez("/home/sa_atari/seaquest_train", images=train_memory.images)
 
-    val_memory = generate_memory(env, episodes=50, max_memory_size=15000)
-    val_memory.preprocess()
-    np.savez("/home/sa_atari/seaquest_val", images=val_memory.images)
+    val_memory = generate_memory(env, episodes=50, max_memory_size=15000, mode='val')
+    # val_memory.preprocess()
+    # np.savez("/home/sa_atari/seaquest_val", images=val_memory.images)
 
     # for epoch in range(2000):
     #     for batch in range(100):

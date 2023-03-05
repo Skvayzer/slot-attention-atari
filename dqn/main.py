@@ -193,7 +193,7 @@ def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
             state, reward, done, _ = env.step(action)
             if i % 4 == 0:
                 continue
-            # print("state shape", state.shape, file=sys.stderr, flush=True)
+            print("state shape", state.shape, file=sys.stderr, flush=True)
             state = torch.tensor(state).permute(2, 0, 1) / 255
             save_image(state, os.path.join("/mnt/data/users_data/smirnov/sa_atari/datasets/seaquest", mode, mode + '_' + str(i) + '.png'))
             # img = env.render()
@@ -233,7 +233,7 @@ if __name__ == '__main__':
 
     # create networks
     policy_net = DQN(n_actions=env.action_space.n).to(device)
-    policy_net = torch.load("/home/sa_atari/dqn_seaquest_model_15000")
+    policy_net = torch.load("/home/sa_atari/dqn_seaquest_model_40000")
     target_net = DQN(n_actions=env.action_space.n).to(device)
 
     target_net.load_state_dict(policy_net.state_dict())
@@ -247,7 +247,7 @@ if __name__ == '__main__':
     # train model
     # train(env, 40000)
     # torch.save(policy_net, "/home/sa_atari/dqn_seaquest_model_40000")
-    policy_net = torch.load("/home/sa_atari/dqn_seaquest_model_40000")
+    # policy_net = torch.load("/home/sa_atari/dqn_seaquest_model_40000")
 
 
 

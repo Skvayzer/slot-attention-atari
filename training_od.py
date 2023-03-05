@@ -23,6 +23,9 @@ import torchvision.transforms.functional as F
 import collections
 import wandb
 
+from dqn.models import *
+
+
 from random import randrange
 
 import gym
@@ -216,7 +219,7 @@ def evaluate_step(model, env, val_memory):
 
 
 def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
-    memory = Memory(max_memory_size)
+    # memory = Memory(max_memory_size)
     i = 0
     for e in range(episodes):
         print(f"Memory Episode {e}", file=sys.stderr, flush=True)
@@ -227,16 +230,23 @@ def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
         done = False
         # while not done:
         while not done:
+            i += 1
             # memory.update(state)
             action = env.action_space.sample()
             state, reward, done, _ = env.step(action)
-            print("state shape", state.shape, file=sys.stderr, flush=True)
+            if i % 4 == 0:
+                continue
+            # print("state shape", state.shape, file=sys.stderr, flush=True)
             state = torch.tensor(state).permute(2, 0, 1) / 255
-            save_image(state, os.path.join("/mnt/data/users_data/smirnov/sa_atari/datasets/seaquest", mode, 'train_' + str(i) + '.png'))
+            save_image(state, os.path.join("/mnt/data/users_data/smirnov/sa_atari/datasets/seaquest", mode, mode + '_' + str(i) + '.png'))
             # img = env.render()
-            i+=1
 
-    return memory
+            print(i, file=sys.stderr, flush=True)
+
+            if i > max_memory_size:
+                return
+
+    return #memory
 
 def train_loop(min_episodes=20, update_step=2, batch_size=64, update_repeats=50, render_step=5,
          num_episodes=3000, seed=42, max_memory_size=50000, measure_step=1,
@@ -276,11 +286,16 @@ def train_loop(min_episodes=20, update_step=2, batch_size=64, update_repeats=50,
     optimizer = torch.optim.AdamW(autoencoder.parameters(), lr=autoencoder.lr)
     scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
 
-    train_memory = generate_memory(env, episodes=50, max_memory_size=70000, mode='train')
+
+    policy_net = DQN(n_actions=env.action_space.n).to(device)
+    policy_net = torch.load("/home/sa_atari/dqn_seaquest_model_40000")
+
+
+    train_memory = generate_memory(env, policy_net, episodes=70000, max_memory_size=50, mode='train')
     # train_memory.preprocess()
     # np.savez("/home/sa_atari/seaquest_train", images=train_memory.images)
 
-    val_memory = generate_memory(env, episodes=50, max_memory_size=15000, mode='val')
+    val_memory = generate_memory(env, policy_net, episodes=15000, max_memory_size=50, mode='val')
     # val_memory.preprocess()
     # np.savez("/home/sa_atari/seaquest_val", images=val_memory.images)
 

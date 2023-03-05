@@ -40,7 +40,7 @@ def select_action(state):
     steps_done += 1
     if sample > eps_threshold:
         with torch.no_grad():
-            return policy_net(state).max(1)[1].view(1,1)
+            return policy_net(state.to('cuda')).max(1)[1].view(1,1)
     else:
         return torch.tensor([[random.randrange(env.action_space.n)]], device=device, dtype=torch.long)
 
@@ -181,7 +181,8 @@ def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
     for e in range(episodes):
         print(f"Memory Episode {e}", file=sys.stderr, flush=True)
 
-        state = env.reset()
+        obs = env.reset()
+        state = get_state(obs)
 
         # img = env.render()
         done = False
@@ -190,7 +191,9 @@ def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
             i += 1
             # memory.update(state)
             action = select_action(state)
-            state, reward, done, _ = env.step(action)
+            obs, reward, done, _ = env.step(action)
+            state = get_state(obs)
+
             if i % 4 == 0:
                 continue
             # print("state shape", state.shape, file=sys.stderr, flush=True)

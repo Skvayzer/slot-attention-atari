@@ -14,7 +14,7 @@ from modules.slot_attention import SlotAttentionBase
 from utils import spatial_broadcast, spatial_flatten, adjusted_rand_index
 
 
-class SlotAttentionAE(nn.Module):
+class SlotAttentionAE(pl.LightningModule):
     """
     Slot attention based autoencoder for object discovery task
     """
@@ -73,10 +73,12 @@ class SlotAttentionAE(nn.Module):
         if self.quantization:
             self.slots_lin = nn.Linear(16 * len(nums) + 64, hidden_size)
             self.coord_quantizer = CoordQuantizer(nums)
+        self.coord_quantizer = CoordQuantizer(nums)
         self.automatic_optimization = False
         self.num_steps = num_steps
         self.lr = lr
         self.beta = beta
+        self.save_hyperparameters()
 
 
     def forward(self, inputs, test=False):
@@ -109,28 +111,36 @@ class SlotAttentionAE(nn.Module):
         return result, recons, kl_loss, masks
 
     def step(self, batch):
+        print("batch shape", batch.shape, file=sys.stderr, flush=True)
+
         result, _, kl_loss, _ = self.forward(batch)
         print("result shape", result.shape, file=sys.stderr, flush=True)
-        print("batch shape", batch.shape, file=sys.stderr, flush=True)
 
         loss = F.mse_loss(result, batch)
         return loss, kl_loss
 
-    def training_step(self, batch, optimizer):
+    def training_step(self, batch, batch_idx):
+        print("batch shape", batch.shape, file=sys.stderr, flush=True)
+
+        optimizer = self.optimizers()
+        sch = self.lr_schedulers()
+        optimizer = optimizer.optimizer
+
         loss, kl_loss = self.step(batch)
-        wandb.log({'Training MSE': loss})
+        self.log('Training MSE', loss)
         if self.quantization:
-            wandb.log({'Training KL': kl_loss})
+            self.log('Training KL', kl_loss)
 
-        loss = loss #+ kl_loss * self.beta
-
+        loss = loss + kl_loss * self.beta
+        optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        optimizer.zero_grad()
+        sch.step()
 
+        self.log('lr', sch.get_last_lr()[0], on_step=False, on_epoch=True)
         return loss
 
-    def validation_step(self, batch):
+    def validation_step(self, batch, batch_idx):
         loss, kl_loss = self.step(batch)
         wandb.log({'Validation MSE': loss})
         if self.quantization:
@@ -138,26 +148,27 @@ class SlotAttentionAE(nn.Module):
 
         imgs = batch[:8]
 
-        result, recons, _, pred_masks = self.forward(imgs)
-        # print("\n\nATTENTION! imgs: ", imgs.shape, file=sys.stderr, flush=True)
-        # print("\n\nATTENTION! recons: ", recons.shape, file=sys.stderr, flush=True)
+        if batch_idx == 0:
+            result, recons, _, pred_masks = self.forward(imgs)
+            # print("\n\nATTENTION! imgs: ", imgs.shape, file=sys.stderr, flush=True)
+            # print("\n\nATTENTION! recons: ", recons.shape, file=sys.stderr, flush=True)
 
-        wandb.log({
-            'images': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(imgs, -1, 1)],
-            'reconstructions': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(result, -1, 1)]
-        })
+            wandb.log({
+                'images': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(imgs, -1, 1)],
+                'reconstructions': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(result, -1, 1)]
+            })
 
-        wandb.log({
-            f'{i} slot': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(recons[:, i], -1, 1)]
-            for i in range(self.num_slots)
-        })
+            wandb.log({
+                f'{i} slot': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(recons[:, i], -1, 1)]
+                for i in range(self.num_slots)
+            })
 
         return loss
 
-    def validation_epoch_end(self):
+    def validation_epoch_end(self, outputdata):
         if self.current_epoch % 5 == 0:
-            save_path = "./sa_autoencoder_end_to_end/" + f'{self.dataset}' + '/' + f'{self.task}'
-            self.trainer.save_checkpoint(os.path.join(save_path, f"{self.current_epoch}_{self.beta}_{self.task}_{self.dataset}_od_pretrained.ckpt"))
+            save_path = "./seqauest_ckpts/" + f'{self.dataset}'
+            self.trainer.save_checkpoint(os.path.join(save_path, f"{self.current_epoch}_{self.dataset}_od_pretrained.ckpt"))
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)

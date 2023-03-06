@@ -23,8 +23,14 @@ import torchvision.transforms.functional as F
 import collections
 import wandb
 
-from dqn.models import DQN
+import pytorch_lightning as pl
+from pytorch_lightning.loggers import WandbLogger
+from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, StochasticWeightAveraging
+from pytorch_lightning.callbacks import LearningRateMonitor
+from pytorch_lightning import seed_everything
 
+from torchvision.datasets import ImageFolder
+from torch.utils.data import DataLoader
 
 from random import randrange
 
@@ -218,7 +224,7 @@ def evaluate_step(model, env, val_memory):
     model.train()
 
 
-def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
+def generate_memory(env, model, episodes=20, max_memory_size=20000, mode='train'):
     # memory = Memory(max_memory_size)
     i = 0
     for e in range(episodes):
@@ -248,99 +254,6 @@ def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
 
     return #memory
 
-def train_loop(min_episodes=20, update_step=2, batch_size=64, update_repeats=50, render_step=5,
-         num_episodes=3000, seed=42, max_memory_size=50000, measure_step=1,
-        env_name='ALE/Seaquest-v5', horizon=np.inf):
-    """
-    :param gamma: reward discount factor
-    :param lr: learning rate for the Q-Network
-    :param min_episodes: we wait "min_episodes" many episodes in order to aggregate enough data before starting to train
-    :param eps: probability to take a random action during training
-    :param eps_decay: after every episode "eps" is multiplied by "eps_decay" to reduces exploration over time
-    :param eps_min: minimal value of "eps"
-    :param update_step: after "update_step" many episodes the Q-Network is trained "update_repeats" many times with a
-    batch of size "batch_size" from the memory.
-    :param batch_size: see above
-    :param update_repeats: see above
-    :param num_episodes: the number of episodes played in total
-    :param seed: random seed for reproducibility
-    :param max_memory_size: size of the replay memory
-    :param lr_gamma: learning rate decay for the Q-Network
-    :param lr_step: every "lr_step" episodes we decay the learning rate
-    :param measure_step: every "measure_step" episode the performance is measured
-    :param measure_repeats: the amount of episodes played in to asses performance
-    :param hidden_dim: hidden dimensions for the Q_network
-    :param env_name: name of the gym environment
-    :param cnn: set to "True" when using environments with image observations like "Pong-v0"
-    :param horizon: number of steps taken in the environment before terminating the episode (prevents very long episodes)
-    :param render: if "True" renders the environment every "render_step" episodes
-    :param render_step: see above
-    :return: the trained Q-Network and the measured performances
-    """
-
-
-    env = gym.make(env_name) #, render_mode='rgb_array')
-    torch.manual_seed(seed)
-    env.seed(seed)
-
-    optimizer = torch.optim.AdamW(autoencoder.parameters(), lr=autoencoder.lr)
-    scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
-
-
-    policy_net = DQN(n_actions=env.action_space.n).to(device)
-    state_dict = torch.load("/home/sa_atari/dqn_seaquest_model_40000")
-    policy_net.load_state_dict(state_dict=state_dict, strict=False)
-
-
-    train_memory = generate_memory(env, policy_net, episodes=70000, max_memory_size=50, mode='train')
-    # train_memory.preprocess()
-    # np.savez("/home/sa_atari/seaquest_train", images=train_memory.images)
-
-    val_memory = generate_memory(env, policy_net, episodes=15000, max_memory_size=50, mode='val')
-    # val_memory.preprocess()
-    # np.savez("/home/sa_atari/seaquest_val", images=val_memory.images)
-
-    # for epoch in range(2000):
-    #     for batch in range(100):
-    #         train_step(batch_size, autoencoder, optimizer, train_memory)
-    #     scheduler.step()
-    #     wandb.log({'lr': scheduler.get_last_lr()[0]})
-    #     evaluate_step(autoencoder, env, val_memory)
-
-    # for episode in range(num_episodes):
-    #     # display the performance
-    #     if episode >= min_episodes and episode % measure_step == 0:
-    #         evaluate_step(autoencoder, env, val_memory)
-    #     wandb.log({"Episode": episode})
-    #         # wandb.log({"lr": scheduler.get_lr()[0]})
-    #
-    #     state = env.reset()
-    #     # memory.state.append(state)
-    #     img = env.render()
-    #     memory.update(img)
-    #
-    #     done = False
-    #     i = 0
-    #     while not done:
-    #     # for i in range(640):
-    #         i += 1
-    #         action = env.action_space.sample()
-    #         state, reward, done, _, _ = env.step(action)
-    #         # print("done???", done, file=sys.stderr, flush=True)
-    #
-    #         if i > horizon:
-    #             done = True
-    #
-    #         if i % render_step == 0:
-    #             img = env.render()
-    #             # save state, action, reward sequence
-    #             memory.update(img)
-    #
-    #     if episode >= min_episodes and episode % update_step == 0:
-    #         for _ in range(update_repeats):
-    #             train_step(batch_size, autoencoder, optimizer, memory)
-    #         scheduler.step()
-    #         wandb.log({'lr': scheduler.get_last_lr()[0]})
 
 
 
@@ -368,10 +281,44 @@ project_name = 'object_detection_' + dataset
 #                            log_model=True)
 wandb.init(project=project_name)
 
+
+
+train_dataset = ImageFolder(root=args.train_path, transform=[], target_transform=[])
+val_dataset = ImageFolder(root=args.val_path, transform=[], target_transform=[])
+
+
+
+train_loader = DataLoader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=False)
+
 monitor = 'Validation MSE'
 autoencoder = SlotAttentionAE(**dict_args, resolution=resize)
 autoencoder.to(device)
 
+wandb_logger = WandbLogger(project=project_name, name=f'{args.task}: nums {args.nums!r} s {args.seed} kl {args.beta}',
+                           log_model=True)
+# ------------------------------------------------------------
+# Callbacks
+# ------------------------------------------------------------
+
+
+# checkpoints
+save_top_k = 1
+checkpoint_callback = ModelCheckpoint(monitor=monitor, save_top_k=save_top_k)
+every_epoch_callback = ModelCheckpoint(every_n_epochs=10, monitor=monitor)
+# Learning rate monitor
+lr_monitor = LearningRateMonitor(logging_interval='step')
+
+# logger_callback = SlotAttentionLogger(val_samples=next(iter(val_loader)))
+
+callbacks = [
+    checkpoint_callback,
+    # logger_callback,
+    every_epoch_callback,
+    # swa,
+    # early_stop_callback,
+    lr_monitor,
+]
 if args.pretrained:
     state_dict = torch.load(args.sa_state_dict)['state_dict']
     # state_dict = torch.load(args.sa_state_dict)
@@ -380,13 +327,22 @@ if args.pretrained:
 # ------------------------------------------------------------
 # Trainer
 # ------------------------------------------------------------
-# trainer parametersПодозритель
+# trainer parameters
+profiler = None  #   'simple'/'advanced'/None
 accelerator = args.device
 # devices = [int(args.devices)]
 gpus = [0]
 
 print(torch.cuda.device_count(), flush=True)
 
+# trainer
+trainer = pl.Trainer(accelerator=accelerator,
+                     devices=[0],
+                     max_epochs=args.max_epochs,
+                     profiler=profiler,
+                     callbacks=callbacks,
+                     logger=wandb_logger,
+                     )
 #  precision=16,
 # deterministic=False)
 
@@ -397,8 +353,10 @@ if not len(args.from_checkpoint):
 #
 #     autoencoder.load_state_dict(state_dict=ckpt, strict=False)
 
-train_loop(env_name='Seaquest-v4')
-
+# Train
+trainer.fit(autoencoder, train_dataloaders=train_loader, val_dataloaders=val_loader, ckpt_path=args.from_checkpoint)
+# Test
+trainer.test(dataloaders=val_loader, ckpt_path=None)
 wandb.finish()
 
 

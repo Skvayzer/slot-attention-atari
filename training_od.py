@@ -75,7 +75,7 @@ program_parser.add_argument("--pretrained", default=False, action=argparse.Boole
 program_parser.add_argument("--beta", type=float, default=1.)
 program_parser.add_argument("--num_workers", type=int, default=4)
 program_parser.add_argument("--task", type=str, default='')
-program_parser.add_argument("--quantization", default=True, action=argparse.BooleanOptionalAction)
+program_parser.add_argument("--quantization", default=False, action=argparse.BooleanOptionalAction)
 
 
 

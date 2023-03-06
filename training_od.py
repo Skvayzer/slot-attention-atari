@@ -283,10 +283,13 @@ project_name = 'object_detection_' + dataset
 #                            log_model=True)
 wandb.init(project=project_name)
 
+transforms = torchvision.transforms.Compose([
+    torchvision.transforms.Resize((128, 128)),
+    torchvision.transforms.ToTensor()
+])
 
-
-train_dataset = ImageFolder(root=args.train_path)
-val_dataset = ImageFolder(root=args.val_path)
+train_dataset = ImageFolder(root=args.train_path, transform=transforms)
+val_dataset = ImageFolder(root=args.val_path, transform=transforms)
 
 
 

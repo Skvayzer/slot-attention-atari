@@ -73,7 +73,7 @@ class SlotAttentionAE(pl.LightningModule):
         if self.quantization:
             self.slots_lin = nn.Linear(16 * len(nums) + 64, hidden_size)
             self.coord_quantizer = CoordQuantizer(nums)
-        self.coord_quantizer = CoordQuantizer(nums)
+
         self.automatic_optimization = False
         self.num_steps = num_steps
         self.lr = lr

@@ -255,8 +255,6 @@ def generate_memory(env, model, episodes=20, max_memory_size=20000, mode='train'
     return #memory
 
 
-
-
 # ------------------------------------------------------------
 # Logger
 # ------------------------------------------------------------

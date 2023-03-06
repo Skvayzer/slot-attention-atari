@@ -21,11 +21,11 @@ class SlotAttentionAE(pl.LightningModule):
 
     def __init__(self,
                  resolution=(128, 128),
-                 num_slots=7,
+                 num_slots=10,
                  num_iters=3,
                  in_channels=3,
                  slot_size=64,
-                 hidden_size=64,
+                 hidden_size=32,
                  dataset='',
                  task='',
                  quantization=False,

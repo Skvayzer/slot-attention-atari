@@ -111,7 +111,7 @@ class SlotAttentionAE(pl.LightningModule):
         return result, recons, kl_loss, masks
 
     def step(self, batch):
-        print("batch shape", batch.shape, file=sys.stderr, flush=True)
+        print("batch", batch, file=sys.stderr, flush=True)
 
         result, _, kl_loss, _ = self.forward(batch)
         print("result shape", result.shape, file=sys.stderr, flush=True)
@@ -120,7 +120,7 @@ class SlotAttentionAE(pl.LightningModule):
         return loss, kl_loss
 
     def training_step(self, batch, batch_idx):
-        print("batch shape", batch.shape, file=sys.stderr, flush=True)
+        # print("batch shape", batch.shape, file=sys.stderr, flush=True)
 
         optimizer = self.optimizers()
         sch = self.lr_schedulers()

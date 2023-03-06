@@ -20,12 +20,11 @@ class SlotAttentionAE(pl.LightningModule):
     """
 
     def __init__(self,
-                 resolution=(105, 80),
-                 num_slots=6,
+                 resolution=(128, 128),
+                 num_slots=7,
                  num_iters=3,
                  in_channels=3,
                  slot_size=64,
-                 log=None,
                  hidden_size=64,
                  dataset='',
                  task='',
@@ -44,8 +43,8 @@ class SlotAttentionAE(pl.LightningModule):
         self.hidden_size = hidden_size
         self.dataset = dataset
         self.task = task
-        self.log = log
         self.quantization = quantization
+        self.nums = nums
 
         # Encoder
         self.encoder = nn.Sequential(
@@ -68,18 +67,19 @@ class SlotAttentionAE(pl.LightningModule):
             nn.Linear(hidden_size, slot_size)
         )
 
-        self.slot_attention = SlotAttentionBase(num_slots=num_slots, iters=num_iters, dim=slot_size,
-                                                hidden_dim=slot_size * 2)
-        if self.quantization:
+        if quantization:
             self.slots_lin = nn.Linear(16 * len(nums) + 64, hidden_size)
             self.coord_quantizer = CoordQuantizer(nums)
 
+        self.slot_attention = SlotAttentionBase(num_slots=num_slots, iters=num_iters, dim=slot_size,
+                                                hidden_dim=slot_size * 2)
         self.automatic_optimization = False
         self.num_steps = num_steps
         self.lr = lr
         self.beta = beta
         self.save_hyperparameters()
 
+        print(f"\n\nATTENTION! resolution: {resolution}, num_slots: {num_slots}, num_iter: {num_iters}, nums: {nums} ", file=sys.stderr, flush=True)
 
     def forward(self, inputs, test=False):
         x = self.encoder(inputs)
@@ -111,18 +111,15 @@ class SlotAttentionAE(pl.LightningModule):
         return result, recons, kl_loss, masks
 
     def step(self, batch):
-        imgs = batch['image']
-        print("img shape", imgs.shape, file=sys.stderr, flush=True)
-
-        result, _, kl_loss, _ = self.forward(imgs)
-        print("result shape", result.shape, file=sys.stderr, flush=True)
-
+        if self.dataset == "celeba":
+            imgs = batch[0]
+        else:
+            imgs = batch['image']
+        result, _, kl_loss, _ = self(imgs)
         loss = F.mse_loss(result, imgs)
         return loss, kl_loss
 
     def training_step(self, batch, batch_idx):
-        # print("batch shape", batch.shape, file=sys.stderr, flush=True)
-
         optimizer = self.optimizers()
         sch = self.lr_schedulers()
         optimizer = optimizer.optimizer
@@ -143,34 +140,36 @@ class SlotAttentionAE(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         loss, kl_loss = self.step(batch)
-        wandb.log({'Validation MSE': loss})
-        if self.quantization:
-            wandb.log({'Validation KL': kl_loss})
-
-        imgs = batch['image']
-        imgs = imgs[:8]
+        self.log('Validation MSE', loss)
+        self.log('Validation KL', kl_loss)
 
         if batch_idx == 0:
-            result, recons, _, pred_masks = self.forward(imgs)
-            # print("\n\nATTENTION! imgs: ", imgs.shape, file=sys.stderr, flush=True)
-            # print("\n\nATTENTION! recons: ", recons.shape, file=sys.stderr, flush=True)
+            imgs = batch['image']
+            imgs = imgs[:8]
 
-            wandb.log({
+            result, recons, _, pred_masks = self(imgs)
+            print("\n\nATTENTION! imgs: ", imgs.shape, file=sys.stderr, flush=True)
+            print("\n\nATTENTION! recons: ", recons.shape, file=sys.stderr, flush=True)
+
+            pred_masks = torch.squeeze(pred_masks)
+            self.trainer.logger.experiment.log({
                 'images': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(imgs, -1, 1)],
                 'reconstructions': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(result, -1, 1)]
             })
 
-            wandb.log({
-                f'{i} slot': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(recons[:, i], -1, 1)]
-                for i in range(self.num_slots)
-            })
+            for i in range(self.num_slots):
+                print(f"\n\n\nATTENTION! {i} slot: ", recons[:, i], file=sys.stderr, flush=True)
+                self.trainer.logger.experiment.log({
+                    f'{i} slot': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(recons[:, i], -1, 1)]
+
+                })
 
         return loss
 
     def validation_epoch_end(self, outputdata):
         if self.current_epoch % 5 == 0:
-            save_path = "./seqauest_ckpts/" + f'{self.dataset}'
-            self.trainer.save_checkpoint(os.path.join(save_path, f"{self.current_epoch}_{self.dataset}_od_pretrained.ckpt"))
+            save_path = "./sa_autoencoder_end_to_end/" + f'{self.dataset}' + '/' + f'{self.task}'
+            self.trainer.save_checkpoint(os.path.join(save_path, f"{self.current_epoch}_{self.beta}_{self.task}_{self.dataset}_od_pretrained.ckpt"))
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)

@@ -51,6 +51,7 @@ DEFAULT_SEED = 42
 # ------------------------------------------------------------
 parser = ArgumentParser()
 
+
 # add PROGRAM level args
 program_parser = parser.add_argument_group('program')
 
@@ -66,21 +67,24 @@ program_parser.add_argument("--dataset", type=str)
 # Experiment parameters
 program_parser.add_argument("--device", default='gpu')
 program_parser.add_argument("--batch_size", type=int, default=64)
-program_parser.add_argument("--episodes", type=int, default=1e6)
-
 program_parser.add_argument("--from_checkpoint", type=str, default='')
 program_parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
 program_parser.add_argument("--nums", type=int, nargs='+')
-program_parser.add_argument("--sa_state_dict", type=str, default='')
+program_parser.add_argument("--sa_state_dict", type=str, default='./quantised_sa_rep/clevr7_od')
 program_parser.add_argument("--pretrained", default=False, action=argparse.BooleanOptionalAction)
 program_parser.add_argument("--beta", type=float, default=1.)
 program_parser.add_argument("--num_workers", type=int, default=4)
 program_parser.add_argument("--task", type=str, default='')
-program_parser.add_argument("--quantization", default=False, action=argparse.BooleanOptionalAction)
+program_parser.add_argument("--quantization", default=True, action=argparse.BooleanOptionalAction)
+
+
 
 
 # Add model specific args
 # parser = SlotAttentionAE.add_model_specific_args(parent_parser=parser)
+
+# Add all the available trainer options to argparse#
+parser = pl.Trainer.add_argparse_args(parser)
 
 # Parse input
 args = parser.parse_args()

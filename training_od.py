@@ -258,6 +258,13 @@ def generate_memory(env, model, episodes=20, max_memory_size=20000, mode='train'
 
     return #memory
 
+def collate_fn(batch):
+
+    images = torch.stack([b for b in batch])
+
+    return {
+        'image': images,
+    }
 
 # ------------------------------------------------------------
 # Logger
@@ -292,9 +299,10 @@ train_dataset = ImageFolder(root=args.train_path, transform=transforms)
 val_dataset = ImageFolder(root=args.val_path, transform=transforms)
 
 
-
-train_loader = DataLoader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True,
+                          drop_last=True, collate_fn=collate_fn)
+val_loader = DataLoader(val_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=False,
+                        drop_last=True, collate_fn=collate_fn)
 
 monitor = 'Validation MSE'
 autoencoder = SlotAttentionAE(**dict_args, resolution=resize)

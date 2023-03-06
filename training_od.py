@@ -259,6 +259,7 @@ def generate_memory(env, model, episodes=20, max_memory_size=20000, mode='train'
     return #memory
 
 def collate_fn(batch):
+    print(batch, file=sys.stderr, flush=True)
 
     images = torch.stack([b for b in batch])
 

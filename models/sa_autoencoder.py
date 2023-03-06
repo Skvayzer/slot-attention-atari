@@ -111,12 +111,13 @@ class SlotAttentionAE(pl.LightningModule):
         return result, recons, kl_loss, masks
 
     def step(self, batch):
-        print("batch shape", batch.shape, file=sys.stderr, flush=True)
+        imgs = batch['image']
+        print("img shape", imgs.shape, file=sys.stderr, flush=True)
 
-        result, _, kl_loss, _ = self.forward(batch)
+        result, _, kl_loss, _ = self.forward(imgs)
         print("result shape", result.shape, file=sys.stderr, flush=True)
 
-        loss = F.mse_loss(result, batch)
+        loss = F.mse_loss(result, imgs)
         return loss, kl_loss
 
     def training_step(self, batch, batch_idx):
@@ -146,7 +147,8 @@ class SlotAttentionAE(pl.LightningModule):
         if self.quantization:
             wandb.log({'Validation KL': kl_loss})
 
-        imgs = batch[:8]
+        imgs = batch['image']
+        imgs = imgs[:8]
 
         if batch_idx == 0:
             result, recons, _, pred_masks = self.forward(imgs)

@@ -285,8 +285,8 @@ wandb.init(project=project_name)
 
 
 
-train_dataset = ImageFolder(root=args.train_path, transform=[], target_transform=[])
-val_dataset = ImageFolder(root=args.val_path, transform=[], target_transform=[])
+train_dataset = ImageFolder(root=args.train_path)
+val_dataset = ImageFolder(root=args.val_path)
 
 
 

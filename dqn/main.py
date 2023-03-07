@@ -236,7 +236,7 @@ if __name__ == '__main__':
 
     # create networks
     policy_net = DQN(n_actions=env.action_space.n).to(device)
-    policy_net.load_state_dict(torch.load("/home/sa_atari/dqn_seaquest_model_40000")['state_dict'])
+    policy_net = torch.load("/home/sa_atari/dqn_seaquest_model_40000")
     target_net = DQN(n_actions=env.action_space.n).to(device)
 
     target_net.load_state_dict(policy_net.state_dict())
@@ -249,7 +249,13 @@ if __name__ == '__main__':
     
     # train model
     train(env, 40000)
-    torch.save(policy_net, "/home/sa_atari/dqn_seaquest_model_95000")
+
+    state = {
+        'epoch': 40000,
+        'state_dict': policy_net.state_dict(),
+        'optimizer': optimizer.state_dict(),
+    }
+    torch.save(state, "/home/sa_atari/dqn_seaquest_model_40000 (new)")
     # policy_net = torch.load("/home/sa_atari/dqn_seaquest_model_40000")
 
 

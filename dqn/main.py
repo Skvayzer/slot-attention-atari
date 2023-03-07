@@ -248,7 +248,7 @@ if __name__ == '__main__':
     memory = ReplayMemory(MEMORY_SIZE)
     
     # train model
-    train(env, 10)
+    train(env, 40000)
 
     state = {
         'epoch': 40000,

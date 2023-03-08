@@ -144,7 +144,7 @@ def train(env, n_episodes, render=False):
     return
 
 def test(env, n_episodes, policy, render=True):
-    env = gym.wrappers.Monitor(env, '/home/sa_atari/videos/' + 'dqn_sequest_video_test')
+    # env = gym.wrappers.Monitor(env, '/home/sa_atari/videos/' + 'dqn_sequest_video_test')
     for episode in range(n_episodes):
         obs = env.reset()
         state = get_state(obs)

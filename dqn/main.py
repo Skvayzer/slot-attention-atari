@@ -274,21 +274,21 @@ if __name__ == '__main__':
 
     # create networks
     policy_net = DQN(n_actions=env.action_space.n).to(device)
-    ckpt = torch.load("/home/sa_atari/dqn_seaquest_model_40000 (new)")
-    policy_net.load_state_dict(ckpt['state_dict'])
+    # ckpt = torch.load("/home/sa_atari/dqn_seaquest_model_40000 (new)")
+    # policy_net.load_state_dict(ckpt['state_dict'])
     target_net = DQN(n_actions=env.action_space.n).to(device)
 
     target_net.load_state_dict(policy_net.state_dict())
 
     # setup optimizer
     optimizer = optim.Adam(policy_net.parameters(), lr=lr)
-    optimizer.load_state_dict(ckpt['optimizer'])
+    # optimizer.load_state_dict(ckpt['optimizer'])
     # initialize replay memory
     memory = ReplayMemory(MEMORY_SIZE)
-    reinitialize_memory(env, 100000, max_memory_size=MEMORY_SIZE)
+    # reinitialize_memory(env, 100000, max_memory_size=MEMORY_SIZE)
     
     # train model
-    train(env, 80000)
+    train(env, 120000)
 
     state = {
         'epoch': 120000,

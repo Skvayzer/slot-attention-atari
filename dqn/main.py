@@ -207,7 +207,7 @@ def reinitialize_memory(env, n_episodes, max_memory_size=20000):
             if done:
                 break
         # if episode % 20 == 0:
-        print('Total steps: {} \t Episode: {}/{} \t Total reward: {} \t Memory Size'.format(steps_done, episode, t, total_reward, len(memory)), file=sys.stderr, flush=True)
+        print('Total steps: {} \t Episode: {}/{} \t Total reward: {} \t Memory Size: {}'.format(steps_done, episode, t, total_reward, len(memory)), file=sys.stderr, flush=True)
 
     # env.close()
     return

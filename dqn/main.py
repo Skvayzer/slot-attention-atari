@@ -199,7 +199,7 @@ def reinitialize_memory(env, n_episodes, max_memory_size=20000):
             reward = torch.tensor([reward], device=device)
 
             memory.push(state, action.to('cpu'), next_state, reward.to('cpu'))
-            if len(memory) > max_memory_size:
+            if len(memory) >= max_memory_size:
                 return
             state = next_state
 

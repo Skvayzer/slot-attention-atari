@@ -174,6 +174,44 @@ def test(env, n_episodes, policy, render=True):
     env.close()
     return
 
+def reinitialize_memory(env, n_episodes, max_memory_size=20000):
+    print('Memory reinitialization started', file=sys.stderr, flush=True)
+    for episode in range(n_episodes):
+        obs = env.reset()
+        state = get_state(obs)
+        total_reward = 0.0
+        for t in count():
+            # print('t:', t, file=sys.stderr, flush=True)
+
+            action = select_action(state)
+
+            obs, reward, done, info = env.step(action)
+            # print(obs, reward, done, info,
+            #       file=sys.stderr, flush=True)
+
+            total_reward += reward
+
+            if not done:
+                next_state = get_state(obs)
+            else:
+                next_state = None
+
+            reward = torch.tensor([reward], device=device)
+
+            memory.push(state, action.to('cpu'), next_state, reward.to('cpu'))
+            if len(memory) > max_memory_size:
+                return
+            state = next_state
+
+
+            if done:
+                break
+        # if episode % 20 == 0:
+        print('Total steps: {} \t Episode: {}/{} \t Total reward: {}'.format(steps_done, episode, t, total_reward), file=sys.stderr, flush=True)
+
+    # env.close()
+    return
+
 
 def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
     # memory = Memory(max_memory_size)
@@ -247,16 +285,17 @@ if __name__ == '__main__':
     optimizer.load_state_dict(ckpt['optimizer'])
     # initialize replay memory
     memory = ReplayMemory(MEMORY_SIZE)
+    reinitialize_memory(env, 100000, max_memory_size=MEMORY_SIZE)
     
     # train model
-    # train(env, 80000)
-    #
-    # state = {
-    #     'epoch': 120000,
-    #     'state_dict': policy_net.state_dict(),
-    #     'optimizer': optimizer.state_dict(),
-    # }
-    # torch.save(state, "/home/sa_atari/dqn_seaquest_model_120000")
+    train(env, 80000)
+
+    state = {
+        'epoch': 120000,
+        'state_dict': policy_net.state_dict(),
+        'optimizer': optimizer.state_dict(),
+    }
+    torch.save(state, "/home/sa_atari/dqn_seaquest_model_120000")
     # policy_net = torch.load("/home/sa_atari/dqn_seaquest_model_40000")
 
 
@@ -267,5 +306,5 @@ if __name__ == '__main__':
     # np.savez("/home/sa_atari/seaquest_train", images=train_memory.images)
 
     # val_memory = generate_memory(env, episodes=15000, max_memory_size=15000, mode='val')
-    test(env, 2000, policy_net, render=False)
+    # test(env, 2000, policy_net, render=False)
 

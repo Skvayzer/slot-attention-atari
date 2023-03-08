@@ -249,14 +249,14 @@ if __name__ == '__main__':
     memory = ReplayMemory(MEMORY_SIZE)
     
     # train model
-    train(env, 80000)
-
-    state = {
-        'epoch': 120000,
-        'state_dict': policy_net.state_dict(),
-        'optimizer': optimizer.state_dict(),
-    }
-    torch.save(state, "/home/sa_atari/dqn_seaquest_model_120000")
+    # train(env, 80000)
+    #
+    # state = {
+    #     'epoch': 120000,
+    #     'state_dict': policy_net.state_dict(),
+    #     'optimizer': optimizer.state_dict(),
+    # }
+    # torch.save(state, "/home/sa_atari/dqn_seaquest_model_120000")
     # policy_net = torch.load("/home/sa_atari/dqn_seaquest_model_40000")
 
 
@@ -267,5 +267,5 @@ if __name__ == '__main__':
     # np.savez("/home/sa_atari/seaquest_train", images=train_memory.images)
 
     # val_memory = generate_memory(env, episodes=15000, max_memory_size=15000, mode='val')
-    # test(env, 1, policy_net, render=False)
+    test(env, 2000, policy_net, render=False)
 

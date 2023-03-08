@@ -183,7 +183,7 @@ def reinitialize_memory(env, n_episodes, max_memory_size=20000):
         for t in count():
             # print('t:', t, file=sys.stderr, flush=True)
 
-            action = select_action(state)
+            action = policy_net(state.to('cuda')).max(1)[1].view(1,1)
 
             obs, reward, done, info = env.step(action)
             # print(obs, reward, done, info,

@@ -9,7 +9,7 @@ import copy
 import cv2
 cv2.ocl.setUseOpenCL(False)
 
-def make_env(env, stack_frames=True, episodic_life=True, clip_rewards=False, scale=False):
+def make_env(env, stack_frames=True, episodic_life=True, clip_rewards=False, scale=False, skip=4):
     if episodic_life:
         env = EpisodicLifeEnv(env)
 
@@ -20,7 +20,7 @@ def make_env(env, stack_frames=True, episodic_life=True, clip_rewards=False, sca
 
     env = WarpFrame(env)
     if stack_frames:
-        env = FrameStack(env, 4)
+        env = FrameStack(env, skip)
     if clip_rewards:
         env = ClipRewardEnv(env)
     return env

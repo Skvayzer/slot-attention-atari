@@ -231,8 +231,7 @@ def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
         while not done:
             count += 1
             # memory.update(state)
-            with torch.no_grad():
-                action = policy_net(state.to('cuda')).max(1)[1].view(1,1)
+            action = policy_net(state.to('cuda')).max(1)[1].view(1,1)
 
             obs, reward, done, _ = env.step(action)
             state = get_state(obs)
@@ -243,14 +242,14 @@ def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
             # if i % 4 == 0:
             #     continue
             # print("state shape", state.shape, file=sys.stderr, flush=True)
-            if count > 5:
+            if count > 3:
                 img = torch.tensor(env.render(mode="rgb_array")).permute(2, 0, 1) / 255
                 save_image(img, os.path.join("/mnt/data/users_data/smirnov/sa_atari/datasets/seaquest_purified", mode, mode + '_' + str(i) + '.png'))
                 # img = env.render()
                 i += 1
                 print('Total images: {} \t Episode: {} \t Total reward: {} \t'.format(i, e,
-                                                                                    total_reward,
-                  file=sys.stderr, flush=True))
+                                                                                    total_reward),
+                  file=sys.stderr, flush=True)
 
             current_lives = env.unwrapped.ale.lives()
             if current_lives < lives:

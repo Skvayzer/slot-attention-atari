@@ -263,7 +263,7 @@ if __name__ == '__main__':
     # set device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    wandb.init(project='atari test')
+    # wandb.init(project='atari test')
     
     # hyperparameters
     BATCH_SIZE = 32

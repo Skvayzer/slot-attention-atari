@@ -215,31 +215,44 @@ def reinitialize_memory(env, n_episodes, max_memory_size=20000):
 
 def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
     # memory = Memory(max_memory_size)
+    env = FrameStack(env, 4)
     i = 0
     for e in range(episodes):
         print(f"Memory Episode {e}", file=sys.stderr, flush=True)
 
         obs = env.reset()
         state = get_state(obs)
+        total_reward = 0.0
 
         # img = env.render()
         done = False
-        # while not done:
+        count = 0
+        lives = env.unwrapped.ale.lives()
         while not done:
-            i += 1
+            count += 1
             # memory.update(state)
-            action = select_action(state)
+            action = policy_net(state.to('cuda')).max(1)[1].view(1,1)
             obs, reward, done, _ = env.step(action)
             state = get_state(obs)
+            total_reward += reward
+
+
 
             # if i % 4 == 0:
             #     continue
             # print("state shape", state.shape, file=sys.stderr, flush=True)
-            img = torch.tensor(env.render(mode="rgb_array")).permute(2, 0, 1) / 255
-            save_image(img, os.path.join("/mnt/data/users_data/smirnov/sa_atari/datasets/seaquest", mode, mode + '_' + str(i) + '.png'))
-            # img = env.render()
+            if count > 5:
+                img = torch.tensor(env.render(mode="rgb_array")).permute(2, 0, 1) / 255
+                save_image(img, os.path.join("/mnt/data/users_data/smirnov/sa_atari/datasets/seaquest_purified", mode, mode + '_' + str(i) + '.png'))
+                # img = env.render()
+                i += 1
+                print('Total images: {} \t Episode: {} \t Total reward: {} \t'.format(i, e,
+                                                                                    total_reward,
+                  file=sys.stderr, flush=True))
 
-            print(i, file=sys.stderr, flush=True)
+            current_lives = env.unwrapped.ale.lives()
+            if current_lives < lives:
+                count = 0
 
             if i > max_memory_size:
                 return
@@ -274,37 +287,37 @@ if __name__ == '__main__':
 
     # create networks
     policy_net = DQN(n_actions=env.action_space.n).to(device)
-    # ckpt = torch.load("/home/sa_atari/dqn_seaquest_model_40000 (new)")
-    # policy_net.load_state_dict(ckpt['state_dict'])
-    target_net = DQN(n_actions=env.action_space.n).to(device)
-
-    target_net.load_state_dict(policy_net.state_dict())
-
-    # setup optimizer
-    optimizer = optim.Adam(policy_net.parameters(), lr=lr)
-    # optimizer.load_state_dict(ckpt['optimizer'])
-    # initialize replay memory
-    memory = ReplayMemory(MEMORY_SIZE)
+    ckpt = torch.load("/home/sa_atari/dqn_seaquest_model_40000 (new)")
+    policy_net.load_state_dict(ckpt['state_dict'])
+    # target_net = DQN(n_actions=env.action_space.n).to(device)
+    #
+    # target_net.load_state_dict(policy_net.state_dict())
+    #
+    # # setup optimizer
+    # optimizer = optim.Adam(policy_net.parameters(), lr=lr)
+    # # optimizer.load_state_dict(ckpt['optimizer'])
+    # # initialize replay memory
+    # memory = ReplayMemory(MEMORY_SIZE)
     # reinitialize_memory(env, 100000, max_memory_size=MEMORY_SIZE)
     
-    # train model
-    train(env, 120000)
-
-    state = {
-        'epoch': 120000,
-        'state_dict': policy_net.state_dict(),
-        'optimizer': optimizer.state_dict(),
-    }
-    torch.save(state, "/home/sa_atari/dqn_seaquest_model_120000")
+    # # train model
+    # train(env, 120000)
+    #
+    # state = {
+    #     'epoch': 120000,
+    #     'state_dict': policy_net.state_dict(),
+    #     'optimizer': optimizer.state_dict(),
+    # }
+    # torch.save(state, "/home/sa_atari/dqn_seaquest_model_120000")
     # policy_net = torch.load("/home/sa_atari/dqn_seaquest_model_40000")
 
 
 
 
-    # train_memory = generate_memory(env, episodes=70000, max_memory_size=70000, mode='train')
+    train_memory = generate_memory(env, episodes=70000, max_memory_size=50, mode='train')
     # train_memory.preprocess()
     # np.savez("/home/sa_atari/seaquest_train", images=train_memory.images)
 
-    # val_memory = generate_memory(env, episodes=15000, max_memory_size=15000, mode='val')
+    val_memory = generate_memory(env, episodes=15000, max_memory_size=50, mode='val')
     # test(env, 2000, policy_net, render=False)
 

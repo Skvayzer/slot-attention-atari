@@ -215,7 +215,7 @@ def reinitialize_memory(env, n_episodes, max_memory_size=20000):
 
 def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
     # memory = Memory(max_memory_size)
-    env = FrameStack(env, 4)
+    # env = FrameStack(env, 4)
     i = 0
     for e in range(episodes):
         print(f"Memory Episode {e}", file=sys.stderr, flush=True)
@@ -231,7 +231,9 @@ def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
         while not done:
             count += 1
             # memory.update(state)
-            action = policy_net(state.to('cuda')).max(1)[1].view(1,1)
+            with torch.no_grad():
+                action = policy_net(state.to('cuda')).max(1)[1].view(1,1)
+
             obs, reward, done, _ = env.step(action)
             state = get_state(obs)
             total_reward += reward
@@ -289,15 +291,15 @@ if __name__ == '__main__':
     policy_net = DQN(n_actions=env.action_space.n).to(device)
     ckpt = torch.load("/home/sa_atari/dqn_seaquest_model_40000 (new)")
     policy_net.load_state_dict(ckpt['state_dict'])
-    # target_net = DQN(n_actions=env.action_space.n).to(device)
-    #
-    # target_net.load_state_dict(policy_net.state_dict())
-    #
-    # # setup optimizer
-    # optimizer = optim.Adam(policy_net.parameters(), lr=lr)
-    # # optimizer.load_state_dict(ckpt['optimizer'])
+    target_net = DQN(n_actions=env.action_space.n).to(device)
+
+    target_net.load_state_dict(policy_net.state_dict())
+
+    # setup optimizer
+    optimizer = optim.Adam(policy_net.parameters(), lr=lr)
+    # optimizer.load_state_dict(ckpt['optimizer'])
     # # initialize replay memory
-    # memory = ReplayMemory(MEMORY_SIZE)
+    memory = ReplayMemory(MEMORY_SIZE)
     # reinitialize_memory(env, 100000, max_memory_size=MEMORY_SIZE)
     
     # # train model

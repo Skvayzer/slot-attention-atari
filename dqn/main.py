@@ -285,7 +285,7 @@ if __name__ == '__main__':
 
     # create environment
     env = gym.make("Seaquest-v4")
-    env = make_env(env, skip=16)
+    env = make_env(env, skip=8)
 
     # create networks
     policy_net = DQN(n_actions=env.action_space.n).to(device)

@@ -315,7 +315,7 @@ if __name__ == '__main__':
 
 
 
-    train_memory = generate_memory(env, episodes=70000, max_memory_size=50, mode='train')
+    train_memory = generate_memory(env, episodes=70000, max_memory_size=200, mode='train')
     # train_memory.preprocess()
     # np.savez("/home/sa_atari/seaquest_train", images=train_memory.images)
 

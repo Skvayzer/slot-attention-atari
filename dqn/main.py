@@ -217,7 +217,8 @@ def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
     # memory = Memory(max_memory_size)
     # env = FrameStack(env, 4)
     i = 0
-    for e in range(episodes):
+    e = 0
+    while True:
         print(f"Memory Episode {e}", file=sys.stderr, flush=True)
 
         obs = env.reset()
@@ -254,7 +255,7 @@ def generate_memory(env, episodes=20, max_memory_size=20000, mode='train'):
             current_lives = env.unwrapped.ale.lives()
             if current_lives < lives:
                 count = 0
-
+            e += 1
             if i > max_memory_size:
                 return
 
@@ -315,10 +316,10 @@ if __name__ == '__main__':
 
 
 
-    train_memory = generate_memory(env, episodes=70000, max_memory_size=200, mode='train')
+    train_memory = generate_memory(env, episodes=70000, max_memory_size=70000, mode='train')
     # train_memory.preprocess()
     # np.savez("/home/sa_atari/seaquest_train", images=train_memory.images)
 
-    val_memory = generate_memory(env, episodes=15000, max_memory_size=50, mode='val')
+    val_memory = generate_memory(env, episodes=15000, max_memory_size=15000, mode='val')
     # test(env, 2000, policy_net, render=False)
 

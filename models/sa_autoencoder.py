@@ -184,7 +184,7 @@ class SlotAttentionAE(pl.LightningModule):
         decay_steps_pct = 0.2
         scheduler_gamma = 0.5
         max_epochs = 100
-        total_steps = max_epochs * len(self.train_dataloader())
+        total_steps = max_epochs * len(self.trainer.train_dataloader())
 
         def warm_and_decay_lr_scheduler(step: int):
             warmup_steps = warmup_steps_pct * total_steps

@@ -171,7 +171,34 @@ class SlotAttentionAE(pl.LightningModule):
             save_path = "./sa_autoencoder_end_to_end/" + f'{self.dataset}' + '/' + f'{self.task}'
             self.trainer.save_checkpoint(os.path.join(save_path, f"{self.current_epoch}_{self.beta}_{self.task}_{self.dataset}_od_pretrained.ckpt"))
 
+    # def configure_optimizers(self):
+    #     optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
+    #     scheduler = lr_scheduler.OneCycleLR(optimizer, max_lr=self.lr, total_steps=int(self.num_steps), pct_start=0.05)
+    #     return [optimizer], [scheduler]
+
+
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
-        scheduler = lr_scheduler.OneCycleLR(optimizer, max_lr=self.lr, total_steps=int(self.num_steps), pct_start=0.05)
-        return [optimizer], [scheduler]
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=0)
+
+        warmup_steps_pct = 0.02
+        decay_steps_pct = 0.2
+        scheduler_gamma = 0.5
+        total_steps = self.max_epochs * len(self.train_dataloader())
+
+        def warm_and_decay_lr_scheduler(step: int):
+            warmup_steps = warmup_steps_pct * total_steps
+            decay_steps = decay_steps_pct * total_steps
+            assert step < total_steps
+            if step < warmup_steps:
+                factor = step / warmup_steps
+            else:
+                factor = 1
+            factor *= scheduler_gamma ** (step / decay_steps)
+            return factor
+
+        scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer=optimizer, lr_lambda=warm_and_decay_lr_scheduler)
+
+        return (
+            [optimizer],
+            [{"scheduler": scheduler, "interval": "step",}],
+        )

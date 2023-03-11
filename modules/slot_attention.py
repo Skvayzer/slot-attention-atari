@@ -26,9 +26,29 @@ class SlotAttentionBase(nn.Module):
         self.eps = eps
         self.scale = dim ** -0.5
 
-        self.slots_mu = nn.Parameter(torch.randn(1, 1, dim))
+        self.slots_mu = nn.Sequential(
+            nn.Linear(self.out_features, 32),
+            nn.LeakyReLU(),
+            nn.Linear(32, 2),
+            nn.LeakyReLU(),
+            nn.Flatten(),
+            nn.Linear(self.resolution[0] * self.resolution[1] * 2, dim)
 
-        self.slots_logsigma = nn.Parameter(torch.zeros(1, 1, dim))
+        )
+        self.slots_log_sigma = nn.Sequential(
+            nn.Linear(self.out_features, 32),
+            nn.LeakyReLU(),
+            nn.Linear(32, 2),
+            nn.LeakyReLU(),
+            nn.Flatten(),
+            nn.Linear(self.resolution[0] * self.resolution[1] * 2, dim)
+
+        )
+
+        # self.slots_mu = nn.Parameter(torch.randn(1, 1, dim))
+        #
+        # self.slots_logsigma = nn.Parameter(torch.zeros(1, 1, dim))
+
         init.xavier_uniform_(self.slots_logsigma)
 
         self.to_q = nn.Linear(dim, dim, bias=False)

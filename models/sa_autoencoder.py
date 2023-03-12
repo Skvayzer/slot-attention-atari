@@ -32,7 +32,9 @@ class SlotAttentionAE(pl.LightningModule):
                  nums=[8, 8, 8, 8],
                  beta=1,
                  lr=4e-4,
-                 num_steps=int(3e5), **kwargs
+                 num_steps=int(3e5),
+                 train_dataloader=None, **kwargs
+
                  ):
         super().__init__()
         self.resolution = resolution
@@ -45,6 +47,7 @@ class SlotAttentionAE(pl.LightningModule):
         self.task = task
         self.quantization = quantization
         self.nums = nums
+        self.train_dataloader = train_dataloader
 
         # Encoder
         self.encoder = nn.Sequential(
@@ -184,7 +187,7 @@ class SlotAttentionAE(pl.LightningModule):
         decay_steps_pct = 0.2
         scheduler_gamma = 0.5
         max_epochs = 100
-        total_steps = max_epochs * len(self.datamodule.train_dataloader())
+        total_steps = max_epochs * len(self.train_dataloader)
 
         def warm_and_decay_lr_scheduler(step: int):
             warmup_steps = warmup_steps_pct * total_steps

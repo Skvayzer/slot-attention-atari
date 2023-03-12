@@ -306,7 +306,7 @@ val_loader = DataLoader(val_dataset, batch_size=args.batch_size, num_workers=arg
                         drop_last=True, collate_fn=collate_fn)
 
 monitor = 'Validation MSE'
-autoencoder = SlotAttentionAE(**dict_args, resolution=resize)
+autoencoder = SlotAttentionAE(**dict_args, resolution=resize, train_dataloader=train_loader)
 autoencoder.to(device)
 
 wandb_logger = WandbLogger(project=project_name, name=f'{args.task}: nums {args.nums!r} s {args.seed} kl {args.beta}',

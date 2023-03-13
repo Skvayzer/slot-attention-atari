@@ -84,7 +84,7 @@ class SlotAttentionAE(pl.LightningModule):
 
         print(f"\n\nATTENTION! resolution: {resolution}, num_slots: {num_slots}, num_iter: {num_iters}, nums: {nums} ", file=sys.stderr, flush=True)
 
-    def forward(self, inputs, test=False):
+    def forward(self, inputs, num_slots=None, test=False):
         x = self.encoder(inputs)
         x = self.enc_emb(x)
 
@@ -92,7 +92,7 @@ class SlotAttentionAE(pl.LightningModule):
         x = self.layer_norm(x)
         x = self.mlp(x)
 
-        slots = self.slot_attention(x)
+        slots = self.slot_attention(x, ns=num_slots)
 
         if self.quantization:
             props, coords, kl_loss = self.coord_quantizer(slots, test)
@@ -109,18 +109,19 @@ class SlotAttentionAE(pl.LightningModule):
         recons, masks = torch.split(x, self.in_channels, dim=2)
         masks = F.softmax(masks, dim=1)
         print(f"\n\nATTENTION! masks: {masks}, mask shape: {masks.shape} ", file=sys.stderr, flush=True)
-
-        iou_loss = mask_iou(masks)
+        iou_loss = 0
+        if self.beta != 0:
+            iou_loss = mask_iou(masks)
         recons = recons * masks
         result = torch.sum(recons, dim=1)
         return result, recons, iou_loss, masks
 
-    def step(self, batch):
+    def step(self, batch, num_slots=None):
         if self.dataset == "celeba":
             imgs = batch[0]
         else:
             imgs = batch['image']
-        result, _, iou_loss, _ = self(imgs)
+        result, _, iou_loss, _ = self(imgs, num_slots)
         loss = F.mse_loss(result, imgs)
         return loss, iou_loss
 
@@ -144,7 +145,7 @@ class SlotAttentionAE(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss, iou_loss = self.step(batch)
+        loss, iou_loss = self.step(batch, num_slots=30)
         self.log('Validation MSE', loss)
         self.log('Validation iou', iou_loss)
 
@@ -156,7 +157,6 @@ class SlotAttentionAE(pl.LightningModule):
             print("\n\nATTENTION! imgs: ", imgs.shape, file=sys.stderr, flush=True)
             print("\n\nATTENTION! recons: ", recons.shape, file=sys.stderr, flush=True)
 
-            pred_masks = torch.squeeze(pred_masks)
             self.trainer.logger.experiment.log({
                 'images': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(imgs, -1, 1)],
                 'reconstructions': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(result, -1, 1)]

@@ -27,11 +27,14 @@ class SlotAttentionBase(nn.Module):
         self.scale = dim ** -0.5
 
 
-        self.slots_mu = nn.Parameter(torch.randn(1, 1, dim))
+        # self.slots_mu = nn.Parameter(torch.randn(1, 1, dim))
+        # self.slots_logsigma = nn.Parameter(torch.zeros(1, 1, dim))
 
-        self.slots_logsigma = nn.Parameter(torch.zeros(1, 1, dim))
+        self.slots_mu = nn.Linear(dim, dim)
 
-        init.xavier_uniform_(self.slots_logsigma)
+        self.slots_logsigma = nn.Linear(dim, dim)
+
+        # init.xavier_uniform_(self.slots_logsigma)
 
         self.to_q = nn.Linear(dim, dim, bias=False)
         self.to_k = nn.Linear(dim, dim, bias=False)
@@ -55,6 +58,7 @@ class SlotAttentionBase(nn.Module):
         slots_prev = slots
 
         slots = self.norm_slots(slots)
+
         q = self.to_q(slots)
 
         dots = torch.einsum('bid,bjd->bij', q, k) * self.scale
@@ -72,12 +76,15 @@ class SlotAttentionBase(nn.Module):
         slots = slots + self.mlp(self.norm_pre_ff(slots))
         return slots
 
-    def forward(self, inputs, *args, **kwargs):
+    def forward(self, inputs, n_s=None, *args, **kwargs):
         b, n, d, device = *inputs.shape, inputs.device
-        n_s = self.num_slots
-        
-        mu = self.slots_mu.expand(b, n_s, -1)
-        sigma = self.slots_logsigma.exp().expand(b, n_s, -1)
+        if n_s is None:
+            n_s = self.num_slots
+
+        slots_mu = self.slots_mu(inputs)
+        slots_logsigma = self.slots_logsigma(inputs)
+        mu = slots_mu.expand(b, n_s, -1)
+        sigma = slots_logsigma.exp().expand(b, n_s, -1)
 
         slots = mu + sigma * torch.randn(mu.shape, device = device)
 

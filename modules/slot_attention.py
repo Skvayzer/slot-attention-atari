@@ -33,7 +33,7 @@ class SlotAttentionBase(nn.Module):
         # self.slots_logsigma = nn.Parameter(torch.zeros(1, 1, dim))
 
         self.slots_mu = nn.Sequential(
-            nn.Linear(self.out_features, 32),
+            nn.Linear(dim, 32),
             nn.LeakyReLU(),
             nn.Linear(32, 2),
             nn.LeakyReLU(),
@@ -43,7 +43,7 @@ class SlotAttentionBase(nn.Module):
 
 
         self.slots_logsigma = nn.Sequential(
-            nn.Linear(self.out_features, 32),
+            nn.Linear(dim, 32),
             nn.LeakyReLU(),
             nn.Linear(32, 2),
             nn.LeakyReLU(),

@@ -130,7 +130,7 @@ def mask_iou(
             target_mask = masks[b, i]
             print(f"\n\nATTENTION! target mask shape: {target_mask.shape} ", file=sys.stderr, flush=True)
 
-            others_mask = torch.concat((masks[b, :i], masks[b, i+1:]), dim=0).sum(dim=1)
+            others_mask = torch.concat((masks[b, :i], masks[b, i+1:]), dim=0).sum(dim=0)
             print(f"\n\nATTENTION! others_mask shape: {others_mask.shape} ", file=sys.stderr, flush=True)
 
             intersection = others_mask * target_mask

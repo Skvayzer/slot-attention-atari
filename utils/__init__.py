@@ -1,7 +1,7 @@
 from .spatial_utils import spatial_flatten, spatial_broadcast
 from .grid import build_grid
 from .loss_func import hungarian_huber_loss
-from .metrics import Evaluator, adjusted_rand_index, average_precision_clevr, compute_average_precision
+from .metrics import Evaluator, adjusted_rand_index, average_precision_clevr, compute_average_precision, mask_iou
 
 
 __all__ = [
@@ -12,5 +12,6 @@ __all__ = [
     'Evaluator',
     'adjusted_rand_index',
     'average_precision_clevr',
-    'compute_average_precision'
+    'compute_average_precision',
+    'mask_iou'
     ]

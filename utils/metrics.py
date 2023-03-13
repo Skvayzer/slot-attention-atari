@@ -110,6 +110,33 @@ def adjusted_rand_index(true_mask, pred_mask):
 #     aris = torch.tensor(np.array(aris), device=pred_mask.device)
 #     return aris
 
+def mask_iou(
+    masks: torch.Tensor,
+):
+    """
+    Inputs:
+    mask1: NxHxW torch.float32. Consists of [0, 1]
+    mask2: NxHxW torch.float32. Consists of [0, 1]
+    Outputs:
+    ret: NxM torch.float32. Consists of [0 - 1]
+    """
+
+    N, H, W = masks.shape
+
+    masks = masks.view(N, H*W)
+    iou = 0
+    for i in range(N):
+        target_mask = masks[i]
+        others_mask = torch.concat((masks[:i], masks[i+1:]), dim=0).sum(dim=1)
+        intersection = torch.matmul(others_mask, target_mask.t())
+
+        area1 = target_mask.sum(dim=1).view(1, -1)
+        area2 = others_mask.sum(dim=1).view(1, -1)
+
+        union = (area1.t() + area2) - intersection
+        iou += intersection / union
+
+    return iou
 
 def msc(pred_mask, true_mask):
     B = pred_mask.shape[0]

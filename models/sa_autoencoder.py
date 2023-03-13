@@ -11,7 +11,7 @@ from torch.optim import lr_scheduler
 
 from modules import Decoder, PosEmbeds, CoordQuantizer
 from modules.slot_attention import SlotAttentionBase
-from utils import spatial_broadcast, spatial_flatten, adjusted_rand_index
+from utils import spatial_broadcast, spatial_flatten, adjusted_rand_index, mask_iou
 
 
 class SlotAttentionAE(pl.LightningModule):
@@ -94,7 +94,6 @@ class SlotAttentionAE(pl.LightningModule):
 
         slots = self.slot_attention(x)
 
-        kl_loss = 0
         if self.quantization:
             props, coords, kl_loss = self.coord_quantizer(slots, test)
             # print("\n\nATTENTION! props/coords : ", props.shape, coords.shape, file=sys.stderr, flush=True)
@@ -109,30 +108,31 @@ class SlotAttentionAE(pl.LightningModule):
         x = x.reshape(inputs.shape[0], self.num_slots, *x.shape[1:])
         recons, masks = torch.split(x, self.in_channels, dim=2)
         masks = F.softmax(masks, dim=1)
+        print(f"\n\nATTENTION! masks: {masks}, mask shape: {masks.shape} ", file=sys.stderr, flush=True)
+
+        iou_loss = mask_iou(masks)
         recons = recons * masks
         result = torch.sum(recons, dim=1)
-        return result, recons, kl_loss, masks
+        return result, recons, iou_loss, masks
 
     def step(self, batch):
         if self.dataset == "celeba":
             imgs = batch[0]
         else:
             imgs = batch['image']
-        result, _, kl_loss, _ = self(imgs)
+        result, _, iou_loss, _ = self(imgs)
         loss = F.mse_loss(result, imgs)
-        return loss, kl_loss
+        return loss, iou_loss
 
     def training_step(self, batch, batch_idx):
         optimizer = self.optimizers()
         sch = self.lr_schedulers()
         optimizer = optimizer.optimizer
 
-        loss, kl_loss = self.step(batch)
+        loss, iou_loss = self.step(batch)
         self.log('Training MSE', loss)
-        if self.quantization:
-            self.log('Training KL', kl_loss)
 
-        loss = loss + kl_loss * self.beta
+        loss = loss + iou_loss * self.beta
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()

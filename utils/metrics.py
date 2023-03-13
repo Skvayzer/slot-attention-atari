@@ -120,18 +120,18 @@ def mask_iou(
     Outputs:
     ret: NxM torch.float32. Consists of [0 - 1]
     """
+    masks = masks.squeeze()
+    B, N, H, W = masks.shape
 
-    N, H, W = masks.shape
-
-    masks = masks.view(N, H*W)
+    masks = masks.view(B, N, H*W)
     iou = 0
     for i in range(N):
-        target_mask = masks[i]
-        others_mask = torch.concat((masks[:i], masks[i+1:]), dim=0).sum(dim=1)
+        target_mask = masks[:, i]
+        others_mask = torch.concat((masks[:, :i], masks[:, i+1:]), dim=1).sum(dim=2)
         intersection = torch.matmul(others_mask, target_mask.t())
 
-        area1 = target_mask.sum(dim=1).view(1, -1)
-        area2 = others_mask.sum(dim=1).view(1, -1)
+        area1 = target_mask.sum(dim=2).view(-1, 1, -1)
+        area2 = others_mask.sum(dim=2).view(-1, 1, -1)
 
         union = (area1.t() + area2) - intersection
         iou += intersection / union

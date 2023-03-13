@@ -1,4 +1,5 @@
 import math
+import sys
 
 import torch
 from torch import nn
@@ -80,8 +81,11 @@ class SlotAttentionBase(nn.Module):
         b, n, d, device = *inputs.shape, inputs.device
         if n_s is None:
             n_s = self.num_slots
+        print(f"\n\nATTENTION! input shape: {inputs.shape} ", file=sys.stderr, flush=True)
 
         slots_mu = self.slots_mu(inputs)
+        print(f"\n\nATTENTION! slots_mu shape: {slots_mu.shape} ", file=sys.stderr, flush=True)
+
         slots_logsigma = self.slots_logsigma(inputs)
         mu = slots_mu.expand(b, n_s, -1)
         sigma = slots_logsigma.exp().expand(b, n_s, -1)

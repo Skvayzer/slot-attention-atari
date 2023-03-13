@@ -134,7 +134,7 @@ def mask_iou(
             print(f"\n\nATTENTION! others_mask shape: {others_mask.shape} ", file=sys.stderr, flush=True)
 
             intersection = others_mask @ target_mask
-            print(f"\n\nATTENTION! intersection shape: {intersection.shape} ", file=sys.stderr, flush=True)
+            print(f"\n\nATTENTION! intersection {intersection} shape: {intersection.shape} ", file=sys.stderr, flush=True)
 
             area1 = target_mask.sum()
             print(f"\n\nATTENTION! area1: {area1} {area1.shape}", file=sys.stderr, flush=True)

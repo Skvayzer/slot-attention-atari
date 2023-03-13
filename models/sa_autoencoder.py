@@ -131,6 +131,8 @@ class SlotAttentionAE(pl.LightningModule):
 
         loss, iou_loss = self.step(batch)
         self.log('Training MSE', loss)
+        self.log('Training iou loss', iou_loss)
+
 
         loss = loss + iou_loss * self.beta
         optimizer.zero_grad()
@@ -142,9 +144,9 @@ class SlotAttentionAE(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss, kl_loss = self.step(batch)
+        loss, iou_loss = self.step(batch)
         self.log('Validation MSE', loss)
-        self.log('Validation KL', kl_loss)
+        self.log('Validation iou', iou_loss)
 
         if batch_idx == 0:
             imgs = batch['image']

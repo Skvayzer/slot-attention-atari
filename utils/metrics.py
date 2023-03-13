@@ -133,13 +133,13 @@ def mask_iou(
             others_mask = torch.concat((masks[b, :i], masks[b, i+1:]), dim=0).sum(dim=0)
             print(f"\n\nATTENTION! others_mask shape: {others_mask.shape} ", file=sys.stderr, flush=True)
 
-            intersection = others_mask * target_mask
+            intersection = others_mask @ target_mask
             print(f"\n\nATTENTION! intersection shape: {intersection.shape} ", file=sys.stderr, flush=True)
 
-            area1 = target_mask.sum(dim=0)
-            print(f"\n\nATTENTION! area1 shape: {area1.shape} ", file=sys.stderr, flush=True)
+            area1 = target_mask.sum()
+            print(f"\n\nATTENTION! area1: {area1} {area1.shape}", file=sys.stderr, flush=True)
 
-            area2 = others_mask.sum(dim=0)
+            area2 = others_mask.sum()
 
             union = (area1.t() + area2) - intersection
             iou += intersection / union

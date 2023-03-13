@@ -127,9 +127,13 @@ def mask_iou(
     iou = 0
     for i in range(N):
         target_mask = masks[:, i]
-        others_mask = torch.concat((masks[:, :i], masks[:, i+1:]), dim=1).sum(dim=1)
-        intersection = torch.matmul(others_mask, target_mask.t())
+        print(f"\n\nATTENTION! target mask shape: {target_mask.shape} ", file=sys.stderr, flush=True)
 
+        others_mask = torch.concat((masks[:, :i], masks[:, i+1:]), dim=1).sum(dim=1)
+        print(f"\n\nATTENTION! others_mask shape: {others_mask.shape} ", file=sys.stderr, flush=True)
+
+        intersection = torch.matmul(others_mask, target_mask.t())
+        
         area1 = target_mask.sum(dim=1).view(-1, 1, -1)
         area2 = others_mask.sum(dim=1).view(-1, 1, -1)
 

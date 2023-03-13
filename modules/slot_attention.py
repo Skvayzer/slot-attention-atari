@@ -20,20 +20,36 @@ class SlotAttentionBase(nn.Module):
     """
     Slot Attention module
     """
-    def __init__(self, num_slots, dim, iters=3, eps=1e-8, hidden_dim=128):
+    def __init__(self, num_slots, dim, iters=3, eps=1e-8, hidden_dim=128, resolution=(128, 128)):
         super().__init__()
         self.num_slots = num_slots
         self.iters = iters
         self.eps = eps
         self.scale = dim ** -0.5
+        self.resolution = resolution
 
 
         # self.slots_mu = nn.Parameter(torch.randn(1, 1, dim))
         # self.slots_logsigma = nn.Parameter(torch.zeros(1, 1, dim))
 
-        self.slots_mu = nn.Linear(dim, dim)
+        self.slots_mu = nn.Sequential(
+            nn.Linear(self.out_features, 32),
+            nn.LeakyReLU(),
+            nn.Linear(32, 2),
+            nn.LeakyReLU(),
+            nn.Flatten(),
+            nn.Linear(self.resolution[0]*self.resolution[1] * 2, dim)
+        )
 
-        self.slots_logsigma = nn.Linear(dim, dim)
+
+        self.slots_logsigma = nn.Sequential(
+            nn.Linear(self.out_features, 32),
+            nn.LeakyReLU(),
+            nn.Linear(32, 2),
+            nn.LeakyReLU(),
+            nn.Flatten(),
+            nn.Linear(self.resolution[0]*self.resolution[1] * 2, dim)
+        )
 
         # init.xavier_uniform_(self.slots_logsigma)
 

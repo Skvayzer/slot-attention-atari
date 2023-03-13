@@ -125,23 +125,24 @@ def mask_iou(
 
     masks = masks.view(B, N, H*W)
     iou = 0
-    for i in range(N):
-        target_mask = masks[:, i]
-        print(f"\n\nATTENTION! target mask shape: {target_mask.shape} ", file=sys.stderr, flush=True)
+    for b in range(B):
+        for i in range(N):
+            target_mask = masks[b, i]
+            print(f"\n\nATTENTION! target mask shape: {target_mask.shape} ", file=sys.stderr, flush=True)
 
-        others_mask = torch.concat((masks[:, :i], masks[:, i+1:]), dim=1).sum(dim=1)
-        print(f"\n\nATTENTION! others_mask shape: {others_mask.shape} ", file=sys.stderr, flush=True)
+            others_mask = torch.concat((masks[b, :i], masks[b, i+1:]), dim=0).sum(dim=1)
+            print(f"\n\nATTENTION! others_mask shape: {others_mask.shape} ", file=sys.stderr, flush=True)
 
-        intersection = torch.matmul(others_mask, target_mask.t())
-        print(f"\n\nATTENTION! intersection shape: {intersection.shape} ", file=sys.stderr, flush=True)
+            intersection = others_mask * target_mask
+            print(f"\n\nATTENTION! intersection shape: {intersection.shape} ", file=sys.stderr, flush=True)
 
-        area1 = target_mask.sum(dim=1).view(-1, 1)
-        print(f"\n\nATTENTION! area1 shape: {area1.shape} ", file=sys.stderr, flush=True)
+            area1 = target_mask.sum(dim=0)
+            print(f"\n\nATTENTION! area1 shape: {area1.shape} ", file=sys.stderr, flush=True)
 
-        area2 = others_mask.sum(dim=1).view(-1, 1)
+            area2 = others_mask.sum(dim=0)
 
-        union = (area1.t() + area2) - intersection
-        iou += intersection / union
+            union = (area1.t() + area2) - intersection
+            iou += intersection / union
 
     return iou
 

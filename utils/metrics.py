@@ -133,9 +133,12 @@ def mask_iou(
         print(f"\n\nATTENTION! others_mask shape: {others_mask.shape} ", file=sys.stderr, flush=True)
 
         intersection = torch.matmul(others_mask, target_mask.t())
-        
-        area1 = target_mask.sum(dim=1).view(-1, 1, -1)
-        area2 = others_mask.sum(dim=1).view(-1, 1, -1)
+        print(f"\n\nATTENTION! intersection shape: {intersection.shape} ", file=sys.stderr, flush=True)
+
+        area1 = target_mask.sum(dim=1).view(-1, 1)
+        print(f"\n\nATTENTION! area1 shape: {area1.shape} ", file=sys.stderr, flush=True)
+
+        area2 = others_mask.sum(dim=1).view(-1, 1)
 
         union = (area1.t() + area2) - intersection
         iou += intersection / union

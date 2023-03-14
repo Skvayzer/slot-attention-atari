@@ -27,6 +27,7 @@ class SlotAttentionBase(nn.Module):
         self.eps = eps
         self.scale = dim ** -0.5
         self.resolution = resolution
+        self.dim = dim
 
 
         # self.slots_mu = nn.Parameter(torch.randn(1, 1, dim))
@@ -103,10 +104,18 @@ class SlotAttentionBase(nn.Module):
         print(f"\n\nATTENTION! slots_mu shape: {slots_mu.shape} ", file=sys.stderr, flush=True)
 
         slots_logsigma = self.slots_logsigma(inputs)
-        mu = slots_mu.expand(b, n_s, -1)
-        sigma = slots_logsigma.exp().expand(b, n_s, -1)
+        # mu = slots_mu.expand(b, n_s, -1)
+        # sigma = slots_logsigma.exp().expand(b, n_s, -1)
+        # slots = mu + sigma * torch.randn(mu.shape, device = device)
+        
+        slots_mu, slots_log_sigma = slots_mu.sum(axis=0), slots_logsigma.sum(axis=0)
+        slots_mu, slots_log_sigma = slots_mu.reshape((1, 1, self.dim)), slots_log_sigma.reshape(
+            (1, 1, self.dim))
+        # Initialize the slots. Shape: [batch_size, num_slots, slot_size].
+        slots_init = torch.randn((b, n_s, self.dim), device = device)
+        slots_init = slots_init.type_as(inputs)
+        slots = slots_mu + slots_log_sigma * slots_init
 
-        slots = mu + sigma * torch.randn(mu.shape, device = device)
 
         inputs = self.norm_input(inputs)        
         k, v = self.to_k(inputs), self.to_v(inputs)

@@ -110,7 +110,7 @@ class SlotAttentionAE(pl.LightningModule):
         x = x.reshape(inputs.shape[0], self.num_slots, *x.shape[1:])
         recons, masks = torch.split(x, self.in_channels, dim=2)
         masks = F.softmax(masks, dim=1)
-        print(f"\n\nATTENTION! masks: {masks}, mask shape: {masks.shape} ", file=sys.stderr, flush=True)
+        # print(f"\n\nATTENTION! masks: {masks}, mask shape: {masks.shape} ", file=sys.stderr, flush=True)
         iou_loss = 0
         if self.beta != 0:
             iou_loss = mask_iou(masks)

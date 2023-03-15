@@ -25,8 +25,8 @@ class SlotAttentionAE(pl.LightningModule):
                  val_num_slots=20,
                  num_iters=3,
                  in_channels=3,
-                 slot_size=64,
-                 hidden_size=64,
+                 slot_size=32,
+                 hidden_size=32,
                  dataset='',
                  task='',
                  quantization=False,
@@ -77,7 +77,7 @@ class SlotAttentionAE(pl.LightningModule):
             self.coord_quantizer = CoordQuantizer(nums)
 
         self.slot_attention = SlotAttentionBase(num_slots=num_slots, iters=num_iters, dim=slot_size,
-                                                hidden_dim=slot_size * 2)
+                                                hidden_dim=slot_size * 2, abs_grid=self.enc_emb.grid)
         self.automatic_optimization = False
         self.num_steps = num_steps
         self.lr = lr
@@ -88,7 +88,9 @@ class SlotAttentionAE(pl.LightningModule):
 
     def forward(self, inputs, num_slots=None, test=False):
         x = self.encoder(inputs)
+        # x, grid = self.enc_emb(x)
         x = self.enc_emb(x)
+
 
         print(f"\n\nATTENTION! num slots: {num_slots} ", file=sys.stderr, flush=True)
         if num_slots is None:
@@ -98,7 +100,7 @@ class SlotAttentionAE(pl.LightningModule):
         x = self.layer_norm(x)
         x = self.mlp(x)
 
-        slots = self.slot_attention(x, n_s=num_slots)
+        slots = self.slot_attention(x, n_s=num_slots) #, grid=grid)
 
         if self.quantization:
             props, coords, kl_loss = self.coord_quantizer(slots, test)

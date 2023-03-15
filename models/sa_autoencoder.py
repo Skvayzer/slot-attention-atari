@@ -77,7 +77,7 @@ class SlotAttentionAE(pl.LightningModule):
             self.coord_quantizer = CoordQuantizer(nums)
 
         self.slot_attention = SlotAttentionBase(num_slots=num_slots, iters=num_iters, dim=slot_size,
-                                                hidden_dim=slot_size * 2, abs_grid=self.enc_emb.grid)
+                                                hidden_dim=slot_size * 2) #, abs_grid=self.enc_emb.grid)
         self.automatic_optimization = False
         self.num_steps = num_steps
         self.lr = lr

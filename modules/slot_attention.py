@@ -30,29 +30,29 @@ class SlotAttentionBase(nn.Module):
         self.dim = dim
 
 
-        self.slots_mu = nn.Parameter(torch.randn(1, 1, dim))
-        self.slots_logsigma = nn.Parameter(torch.zeros(1, 1, dim))
-
-        # self.slots_mu = nn.Sequential(
-        #     nn.Linear(dim, 32),
-        #     nn.LeakyReLU(),
-        #     nn.Linear(32, 2),
-        #     nn.LeakyReLU(),
-        #     nn.Flatten(),
-        #     nn.Linear(self.resolution[0]*self.resolution[1] * 2, dim)
-        # )
-        #
-        #
-        # self.slots_logsigma = nn.Sequential(
-        #     nn.Linear(dim, 32),
-        #     nn.LeakyReLU(),
-        #     nn.Linear(32, 2),
-        #     nn.LeakyReLU(),
-        #     nn.Flatten(),
-        #     nn.Linear(self.resolution[0]*self.resolution[1] * 2, dim)
-        # )
-
+        # self.slots_mu = nn.Parameter(torch.randn(1, 1, dim))
+        # self.slots_logsigma = nn.Parameter(torch.zeros(1, 1, dim))
         # init.xavier_uniform_(self.slots_logsigma)
+
+        self.slots_mu = nn.Sequential(
+            nn.Linear(dim, 32),
+            nn.LeakyReLU(),
+            nn.Linear(32, 2),
+            nn.LeakyReLU(),
+            nn.Flatten(),
+            nn.Linear(self.resolution[0]*self.resolution[1] * 2, dim)
+        )
+
+
+        self.slots_logsigma = nn.Sequential(
+            nn.Linear(dim, 32),
+            nn.LeakyReLU(),
+            nn.Linear(32, 2),
+            nn.LeakyReLU(),
+            nn.Flatten(),
+            nn.Linear(self.resolution[0]*self.resolution[1] * 2, dim)
+        )
+
 
         self.to_q = nn.Linear(dim, dim, bias=False)
         self.to_k = nn.Linear(dim, dim, bias=False)
@@ -100,20 +100,21 @@ class SlotAttentionBase(nn.Module):
             n_s = self.num_slots
         print(f"\n\nATTENTION! input shape: {inputs.shape} ", file=sys.stderr, flush=True)
 
-        # slots_mu = self.slots_mu(inputs)
-        # print(f"\n\nATTENTION! slots_mu shape: {slots_mu.shape} ", file=sys.stderr, flush=True)
-        # slots_logsigma = self.slots_logsigma(inputs)
-        mu = self.slots_mu.expand(b, n_s, -1)
-        sigma = self.slots_logsigma.exp().expand(b, n_s, -1)
-        slots = mu + sigma * torch.randn(mu.shape, device = device)
-        
-        # slots_mu, slots_log_sigma = slots_mu.sum(axis=0), slots_logsigma.sum(axis=0)
-        # slots_mu, slots_log_sigma = slots_mu.reshape((1, 1, self.dim)), slots_log_sigma.reshape(
-        #     (1, 1, self.dim))
+        #
+        # mu = self.slots_mu.expand(b, n_s, -1)
+        # sigma = self.slots_logsigma.exp().expand(b, n_s, -1)
+        # slots = mu + sigma * torch.randn(mu.shape, device = device)
+
+        slots_mu = self.slots_mu(inputs)
+        print(f"\n\nATTENTION! slots_mu shape: {slots_mu.shape} ", file=sys.stderr, flush=True)
+        slots_logsigma = self.slots_logsigma(inputs)
+        slots_mu, slots_log_sigma = slots_mu.sum(axis=0), slots_logsigma.sum(axis=0)
+        slots_mu, slots_log_sigma = slots_mu.reshape((1, 1, self.dim)), slots_log_sigma.reshape(
+            (1, 1, self.dim))
         # Initialize the slots. Shape: [batch_size, num_slots, slot_size].
-        # slots_init = torch.randn((b, n_s, self.dim), device = device)
-        # slots_init = slots_init.type_as(inputs)
-        # slots = slots_mu + slots_log_sigma * slots_init
+        slots_init = torch.randn((b, n_s, self.dim), device = device)
+        slots_init = slots_init.type_as(inputs)
+        slots = slots_mu + slots_log_sigma * slots_init
 
 
         inputs = self.norm_input(inputs)        

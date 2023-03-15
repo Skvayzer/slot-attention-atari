@@ -22,6 +22,7 @@ class SlotAttentionAE(pl.LightningModule):
     def __init__(self,
                  resolution=(128, 128),
                  num_slots=10,
+                 val_num_slots=30,
                  num_iters=3,
                  in_channels=3,
                  slot_size=64,
@@ -39,6 +40,7 @@ class SlotAttentionAE(pl.LightningModule):
         super().__init__()
         self.resolution = resolution
         self.num_slots = num_slots
+        self.val_num_slots = val_num_slots
         self.num_iters = num_iters
         self.in_channels = in_channels
         self.slot_size = slot_size
@@ -145,7 +147,7 @@ class SlotAttentionAE(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss, iou_loss = self.step(batch, num_slots=30)
+        loss, iou_loss = self.step(batch, num_slots=self.val_num_slots)
         self.log('Validation MSE', loss)
         self.log('Validation iou', iou_loss)
 
@@ -162,7 +164,7 @@ class SlotAttentionAE(pl.LightningModule):
                 'reconstructions': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(result, -1, 1)]
             })
 
-            for i in range(self.num_slots):
+            for i in range(self.val_num_slots):
                 # print(f"\n\n\nATTENTION! {i} slot: ", recons[:, i], file=sys.stderr, flush=True)
                 self.trainer.logger.experiment.log({
                     f'{i} slot': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(recons[:, i], -1, 1)]

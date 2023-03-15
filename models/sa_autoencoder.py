@@ -90,6 +90,9 @@ class SlotAttentionAE(pl.LightningModule):
         x = self.encoder(inputs)
         x = self.enc_emb(x)
 
+        print(f"\n\nATTENTION! num slots: {num_slots} ", file=sys.stderr, flush=True)
+
+
         x = spatial_flatten(x[0])
         x = self.layer_norm(x)
         x = self.mlp(x)

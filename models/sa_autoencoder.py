@@ -97,7 +97,7 @@ class SlotAttentionAE(pl.LightningModule):
         x = self.layer_norm(x)
         x = self.mlp(x)
 
-        slots = self.slot_attention(x, ns=num_slots)
+        slots = self.slot_attention(x, n_s=num_slots)
 
         if self.quantization:
             props, coords, kl_loss = self.coord_quantizer(slots, test)

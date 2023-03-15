@@ -22,7 +22,7 @@ class SlotAttentionAE(pl.LightningModule):
     def __init__(self,
                  resolution=(128, 128),
                  num_slots=10,
-                 val_num_slots=15,
+                 val_num_slots=10,
                  num_iters=3,
                  in_channels=3,
                  slot_size=64,
@@ -91,7 +91,8 @@ class SlotAttentionAE(pl.LightningModule):
         x = self.enc_emb(x)
 
         print(f"\n\nATTENTION! num slots: {num_slots} ", file=sys.stderr, flush=True)
-
+        if num_slots is None:
+            num_slots = self.num_slots
 
         x = spatial_flatten(x[0])
         x = self.layer_norm(x)
@@ -110,7 +111,7 @@ class SlotAttentionAE(pl.LightningModule):
         x = self.dec_emb(x)
         x = self.decoder(x[0])
 
-        x = x.reshape(inputs.shape[0], self.num_slots, *x.shape[1:])
+        x = x.reshape(inputs.shape[0], num_slots, *x.shape[1:])
         recons, masks = torch.split(x, self.in_channels, dim=2)
         masks = F.softmax(masks, dim=1)
         # print(f"\n\nATTENTION! masks: {masks}, mask shape: {masks.shape} ", file=sys.stderr, flush=True)

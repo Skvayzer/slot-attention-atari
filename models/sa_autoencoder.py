@@ -155,7 +155,7 @@ class SlotAttentionAE(pl.LightningModule):
             imgs = batch['image']
             imgs = imgs[:8]
 
-            result, recons, _, pred_masks = self(imgs)
+            result, recons, _, pred_masks = self(imgs, num_slots=self.val_num_slots)
             print("\n\nATTENTION! imgs: ", imgs.shape, file=sys.stderr, flush=True)
             print("\n\nATTENTION! recons: ", recons.shape, file=sys.stderr, flush=True)
 

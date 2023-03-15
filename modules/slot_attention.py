@@ -98,7 +98,7 @@ class SlotAttentionBase(nn.Module):
         b, n, d, device = *inputs.shape, inputs.device
         if n_s is None:
             n_s = self.num_slots
-        print(f"\n\nATTENTION! ns: {ns} ", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! ns: {n_s} ", file=sys.stderr, flush=True)
 
         #
         # mu = self.slots_mu.expand(b, n_s, -1)

@@ -102,7 +102,6 @@ class SlotAttentionBase(nn.Module):
 
         # slots_mu = self.slots_mu(inputs)
         # print(f"\n\nATTENTION! slots_mu shape: {slots_mu.shape} ", file=sys.stderr, flush=True)
-        #
         # slots_logsigma = self.slots_logsigma(inputs)
         mu = self.slots_mu.expand(b, n_s, -1)
         sigma = self.slots_logsigma.exp().expand(b, n_s, -1)

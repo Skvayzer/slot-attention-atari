@@ -10,7 +10,7 @@ from torch.nn import functional as F
 from torch.optim import lr_scheduler
 
 from modules import Decoder, PosEmbeds, CoordQuantizer
-from modules.slot_attention import SlotAttentionBase
+from modules.slot_attention import SlotAttentionBase, InvariantSlotAttention
 from utils import spatial_broadcast, spatial_flatten, adjusted_rand_index, mask_iou
 
 
@@ -76,8 +76,8 @@ class SlotAttentionAE(pl.LightningModule):
             self.slots_lin = nn.Linear(16 * len(nums) + 64, hidden_size)
             self.coord_quantizer = CoordQuantizer(nums)
 
-        self.slot_attention = SlotAttentionBase(num_slots=num_slots, iters=num_iters, dim=slot_size,
-                                                hidden_dim=slot_size * 2) #, abs_grid=self.enc_emb.grid)
+        self.slot_attention = InvariantSlotAttention(num_slots=num_slots, iters=num_iters, dim=slot_size,
+                                                hidden_dim=slot_size * 2)
         self.automatic_optimization = False
         self.num_steps = num_steps
         self.lr = lr
@@ -86,21 +86,19 @@ class SlotAttentionAE(pl.LightningModule):
 
         print(f"\n\nATTENTION! resolution: {resolution}, num_slots: {num_slots}, num_iter: {num_iters}, nums: {nums} ", file=sys.stderr, flush=True)
 
-    def forward(self, inputs, num_slots=None, test=False):
-        x = self.encoder(inputs)
-        # x, grid = self.enc_emb(x)
-        x = self.enc_emb(x)
 
+    def forward(self, inputs, num_slots=None, test=False):
+        encoded = self.encoder(inputs)
+        x = self.enc_emb(encoded)
+        x = spatial_flatten(x[0])
+        x = self.layer_norm(x)
+        x = self.mlp(x)
 
         print(f"\n\nATTENTION! num slots: {num_slots} ", file=sys.stderr, flush=True)
         if num_slots is None:
             num_slots = self.num_slots
 
-        x = spatial_flatten(x[0])
-        x = self.layer_norm(x)
-        x = self.mlp(x)
-
-        slots = self.slot_attention(x, n_s=num_slots) #, grid=grid)
+        slots = self.slot_attention(x, n_s=num_slots)
 
         if self.quantization:
             props, coords, kl_loss = self.coord_quantizer(slots, test)

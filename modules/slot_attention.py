@@ -31,7 +31,7 @@ class InvariantSlotAttention(nn.Module):
         self.resolution = resolution
         self.dim = dim
 
-        self.abs_grid = build_grid(resolution)
+        self.abs_grid = torch.Tensor(build_grid(resolution))
 
         # self.slots_mu = nn.Parameter(torch.randn(1, 1, dim))
         # self.slots_logsigma = nn.Parameter(torch.zeros(1, 1, dim))

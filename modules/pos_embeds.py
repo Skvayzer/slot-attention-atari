@@ -11,7 +11,7 @@ class PosEmbeds(nn.Module):
         super().__init__()
         self.linear = nn.Linear(4, hidden_size)
         grid = torch.Tensor(build_grid(resolution))
-        print(f"\n\nATTENTION! GRID: {self.grid.shape} ", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! GRID: {grid.shape} ", file=sys.stderr, flush=True)
 
         self.grid = nn.Parameter(grid, requires_grad=False)
 

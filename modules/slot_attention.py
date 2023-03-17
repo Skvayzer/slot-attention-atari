@@ -5,6 +5,8 @@ import torch
 from torch import nn
 from torch.nn import init
 from torch.nn import functional as F
+from utils import spatial_flatten, build_grid
+
 
 
 def norm_prob(mus, logsigmas, values):
@@ -16,11 +18,11 @@ def norm_prob(mus, logsigmas, values):
     return torch.exp(log_prob)
 
 
-class SlotAttentionBase(nn.Module):
+class InvariantSlotAttention(nn.Module):
     """
     Slot Attention module
     """
-    def __init__(self, num_slots, dim, iters=3, eps=1e-8, hidden_dim=128, resolution=(128, 128)):
+    def __init__(self, num_slots, dim, iters=3, eps=1e-8, hidden_dim=128, resolution=(128, 128), enc_hidden_size=64):
         super().__init__()
         self.num_slots = num_slots
         self.iters = iters
@@ -29,6 +31,7 @@ class SlotAttentionBase(nn.Module):
         self.resolution = resolution
         self.dim = dim
 
+        self.abs_grid = build_grid(resolution)
 
         # self.slots_mu = nn.Parameter(torch.randn(1, 1, dim))
         # self.slots_logsigma = nn.Parameter(torch.zeros(1, 1, dim))
@@ -58,6 +61,14 @@ class SlotAttentionBase(nn.Module):
         self.to_k = nn.Linear(dim, dim, bias=False)
         self.to_v = nn.Linear(dim, dim, bias=False)
 
+        self.g = nn.Linear(4, enc_hidden_size)
+        self.f = nn.Sequential(
+            nn.LayerNorm(enc_hidden_size),
+            nn.Linear(dim, hidden_dim),
+            nn.ReLU(inplace = True),
+            nn.Linear(hidden_dim, dim)
+        )
+
         self.gru = nn.GRUCell(dim, dim)
 
         hidden_dim = max(dim, hidden_dim)
@@ -71,12 +82,112 @@ class SlotAttentionBase(nn.Module):
         self.norm_input  = nn.LayerNorm(dim)
         self.norm_slots  = nn.LayerNorm(dim)
         self.norm_pre_ff = nn.LayerNorm(dim)
-        
+
+    def encode_pos(self, encoded):
+        x = self.enc_emb(encoded)
+        x = spatial_flatten(x[0])
+        x = self.layer_norm(x)
+        x = self.mlp(x)
+        return x
+
+    def forward(self, inputs, n_s=None, grid=None,  *args, **kwargs):
+        b, n, d, device = *inputs.shape, inputs.device
+        if n_s is None:
+            n_s = self.num_slots
+        print(f"\n\nATTENTION! ns: {n_s} ", file=sys.stderr, flush=True)
+
+
+        # mu = self.slots_mu.expand(b, n_s, -1)
+        # sigma = self.slots_logsigma.exp().expand(b, n_s, -1)
+        # slots = mu + sigma * torch.randn(mu.shape, device = device)
+
+        slots_mu = self.slots_mu(inputs)
+        print(f"\n\nATTENTION! slots_mu shape: {slots_mu.shape} ", file=sys.stderr, flush=True)
+        slots_logsigma = self.slots_logsigma(inputs)
+        slots_mu, slots_log_sigma = slots_mu.sum(axis=0), slots_logsigma.sum(axis=0)
+        slots_mu, slots_log_sigma = slots_mu.reshape((1, 1, self.dim)), slots_log_sigma.reshape(
+            (1, 1, self.dim))
+        # Initialize the slots. Shape: [batch_size, num_slots, slot_size].
+        slots_init = torch.randn((b, n_s, self.dim), device = device)
+        slots_init = slots_init.type_as(inputs)
+        slots = slots_mu + slots_log_sigma * slots_init
+
+        inputs = self.norm_input(inputs)
+        S_p = 2 * torch.rand() - 1
+        for t in range(1, self.iters + 1):
+            slots_prev = slots
+
+            slots = self.norm_slots(slots)
+
+            # Computes relative grids per slot, and associated key, value embeddings
+            rel_grid = (self.abs_grid - S_p)
+            k = self.f(self.to_k(inputs) + self.g(rel_grid))
+            v = self.f(self.to_v(inputs) + self.g(rel_grid))
+
+            # Inverted dot production attention.
+            q = self.to_q(slots)
+            dots = torch.einsum('bid,bjd->bij', q, k) * self.scale
+            attn = dots.softmax(dim=1) + self.eps
+            updates = torch.einsum('bjd,bij->bid', v, attn)
+            attn = attn / attn.sum(dim=-1, keepdim=True)
+
+            # Updates Sp, Ss and slots.
+            S_p = (attn * self.abs_grid).sum(dim=-1, keepdim=True) / attn.sum(dim=-1, keepdim=True)
+            # S_s = (((attn + self.eps)*(grid - S_p)**2).sum(dim=-1, keepdim=True)/(attn + self.eps).sum(dim=-1, keepdim=True))**0.5
+            # v1, v2 = WPCA().fit_transform(self.abs_grid, attn)
+            # S_r = postprocess(v1, v2)
+
+            if t < self.iters + 1:
+                slots = self.gru(
+                    updates.reshape(-1, d),
+                    slots_prev.reshape(-1, d)
+                )
+
+                slots = slots.reshape(b, -1, d)
+                slots = slots + self.mlp(self.norm_pre_ff(slots))
+
+        return slots
+
+
+class SlotAttentionBase(nn.Module):
+    """
+    Slot Attention module
+    """
+
+    def __init__(self, num_slots, dim, iters=3, eps=1e-8, hidden_dim=128):
+        super().__init__()
+        self.num_slots = num_slots
+        self.iters = iters
+        self.eps = eps
+        self.scale = dim ** -0.5
+
+        self.slots_mu = nn.Parameter(torch.randn(1, 1, dim))
+
+        self.slots_logsigma = nn.Parameter(torch.zeros(1, 1, dim))
+        init.xavier_uniform_(self.slots_logsigma)
+
+        self.to_q = nn.Linear(dim, dim, bias=False)
+        self.to_k = nn.Linear(dim, dim, bias=False)
+        self.to_v = nn.Linear(dim, dim, bias=False)
+
+        self.gru = nn.GRUCell(dim, dim)
+
+        hidden_dim = max(dim, hidden_dim)
+
+        self.mlp = nn.Sequential(
+            nn.Linear(dim, hidden_dim),
+            nn.ReLU(inplace=True),
+            nn.Linear(hidden_dim, dim)
+        )
+
+        self.norm_input = nn.LayerNorm(dim)
+        self.norm_slots = nn.LayerNorm(dim)
+        self.norm_pre_ff = nn.LayerNorm(dim)
+
     def step(self, slots, k, v, b, n, d, device, n_s):
         slots_prev = slots
 
         slots = self.norm_slots(slots)
-
         q = self.to_q(slots)
 
         dots = torch.einsum('bid,bjd->bij', q, k) * self.scale
@@ -98,26 +209,13 @@ class SlotAttentionBase(nn.Module):
         b, n, d, device = *inputs.shape, inputs.device
         if n_s is None:
             n_s = self.num_slots
-        print(f"\n\nATTENTION! ns: {n_s} ", file=sys.stderr, flush=True)
 
-        #
-        # mu = self.slots_mu.expand(b, n_s, -1)
-        # sigma = self.slots_logsigma.exp().expand(b, n_s, -1)
-        # slots = mu + sigma * torch.randn(mu.shape, device = device)
+        mu = self.slots_mu.expand(b, n_s, -1)
+        sigma = self.slots_logsigma.exp().expand(b, n_s, -1)
 
-        slots_mu = self.slots_mu(inputs)
-        print(f"\n\nATTENTION! slots_mu shape: {slots_mu.shape} ", file=sys.stderr, flush=True)
-        slots_logsigma = self.slots_logsigma(inputs)
-        slots_mu, slots_log_sigma = slots_mu.sum(axis=0), slots_logsigma.sum(axis=0)
-        slots_mu, slots_log_sigma = slots_mu.reshape((1, 1, self.dim)), slots_log_sigma.reshape(
-            (1, 1, self.dim))
-        # Initialize the slots. Shape: [batch_size, num_slots, slot_size].
-        slots_init = torch.randn((b, n_s, self.dim), device = device)
-        slots_init = slots_init.type_as(inputs)
-        slots = slots_mu + slots_log_sigma * slots_init
+        slots = mu + sigma * torch.randn(mu.shape, device=device)
 
-
-        inputs = self.norm_input(inputs)        
+        inputs = self.norm_input(inputs)
         k, v = self.to_k(inputs), self.to_v(inputs)
 
         for _ in range(self.iters):
@@ -125,8 +223,8 @@ class SlotAttentionBase(nn.Module):
         slots = self.step(slots.detach(), k, v, b, n, d, device, n_s)
 
         return slots
-    
-    
+
+
 class SlotAttentionGMM(nn.Module):
     """
     Slot Attention module
@@ -331,7 +429,7 @@ class SlotAttention(nn.Module):
         return slots
 
 if __name__ == "__main__":
-    slotattention = SlotAttentionBase(num_slots=10, dim=64)
+    slotattention = InvariantSlotAttention(num_slots=10, dim=64)
     state_dict = torch.load("/home/alexandr_ko/quantised_sa_od/clevr10_sp")
     key:str
     state_dict = {key[len('slot_attention.'):]:state_dict[key] for key in state_dict if key.startswith('slot_attention')}

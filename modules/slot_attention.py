@@ -113,7 +113,7 @@ class InvariantSlotAttention(nn.Module):
         slots = slots_mu + slots_log_sigma * slots_init
 
         inputs = self.norm_input(inputs)
-        S_p = 2 * torch.rand() - 1
+        S_p = 2 * torch.rand(1).item() - 1
         for t in range(1, self.iters + 1):
             slots_prev = slots
 

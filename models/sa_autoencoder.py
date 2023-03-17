@@ -89,10 +89,19 @@ class SlotAttentionAE(pl.LightningModule):
 
     def forward(self, inputs, num_slots=None, test=False):
         encoded = self.encoder(inputs)
+        print(f"\n\nATTENTION! encoded {encoded} ", file=sys.stderr, flush=True)
+
         x = self.enc_emb(encoded)
+        print(f"\n\nATTENTION! x {x} ", file=sys.stderr, flush=True)
+
         x = spatial_flatten(x[0])
+        print(f"\n\nATTENTION! x {x} ", file=sys.stderr, flush=True)
+
         x = self.layer_norm(x)
+        print(f"\n\nATTENTION! x {x} ", file=sys.stderr, flush=True)
+
         x = self.mlp(x)
+        print(f"\n\nATTENTION! x {x} ", file=sys.stderr, flush=True)
 
         print(f"\n\nATTENTION! num slots: {num_slots} ", file=sys.stderr, flush=True)
         if num_slots is None:

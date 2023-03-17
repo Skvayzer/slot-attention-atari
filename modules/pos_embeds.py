@@ -18,8 +18,8 @@ class PosEmbeds(nn.Module):
         
     def forward(self, inputs):
         pos_emb = self.linear(self.grid).moveaxis(3, 1)
-        # print("\n\nATTENTION! inputs : ", inputs.shape, file=sys.stderr, flush=True)
-        # print("\n\nATTENTION! pos_emb : ", pos_emb.shape, file=sys.stderr, flush=True)
+        print("\n\nATTENTION! inputs : ", inputs.shape, file=sys.stderr, flush=True)
+        print("\n\nATTENTION! pos_emb : ", pos_emb.shape, file=sys.stderr, flush=True)
 
 
 

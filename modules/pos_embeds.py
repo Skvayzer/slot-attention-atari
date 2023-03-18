@@ -16,8 +16,10 @@ class PosEmbeds(nn.Module):
         self.grid = nn.Parameter(grid, requires_grad=False)
 
         
-    def forward(self, inputs):
-        pos_emb = self.linear(self.grid).moveaxis(3, 1)
+    def forward(self, inputs, grid=None):
+        if grid is None:
+            grid = self.grid
+        pos_emb = self.linear(grid).moveaxis(3, 1)
         print("\n\nATTENTION! inputs : ", inputs.shape, file=sys.stderr, flush=True)
         print("\n\nATTENTION! pos_emb : ", pos_emb.shape, file=sys.stderr, flush=True)
 

@@ -6,6 +6,7 @@ from torch import nn
 from torch.nn import init
 from torch.nn import functional as F
 from utils import spatial_flatten, build_grid
+from modules import PosEmbeds
 
 
 
@@ -33,28 +34,38 @@ class InvariantSlotAttention(nn.Module):
 
         self.abs_grid = torch.Tensor(build_grid(resolution))
 
-        # self.slots_mu = nn.Parameter(torch.randn(1, 1, dim))
-        # self.slots_logsigma = nn.Parameter(torch.zeros(1, 1, dim))
-        # init.xavier_uniform_(self.slots_logsigma)
+        self.slots_mu = nn.Parameter(torch.randn(1, 1, dim))
+        self.slots_logsigma = nn.Parameter(torch.zeros(1, 1, dim))
+        init.xavier_uniform_(self.slots_logsigma)
 
-        self.slots_mu = nn.Sequential(
-            nn.Linear(dim, 32),
-            nn.LeakyReLU(),
-            nn.Linear(32, 2),
-            nn.LeakyReLU(),
-            nn.Flatten(),
-            nn.Linear(self.resolution[0]*self.resolution[1] * 2, dim)
+        # self.slots_mu = nn.Sequential(
+        #     nn.Linear(dim, 32),
+        #     nn.LeakyReLU(),
+        #     nn.Linear(32, 2),
+        #     nn.LeakyReLU(),
+        #     nn.Flatten(),
+        #     nn.Linear(self.resolution[0]*self.resolution[1] * 2, dim)
+        # )
+        #
+        #
+        # self.slots_logsigma = nn.Sequential(
+        #     nn.Linear(dim, 32),
+        #     nn.LeakyReLU(),
+        #     nn.Linear(32, 2),
+        #     nn.LeakyReLU(),
+        #     nn.Flatten(),
+        #     nn.Linear(self.resolution[0]*self.resolution[1] * 2, dim)
+        # )
+
+
+        self.enc_emb = PosEmbeds(enc_hidden_size, self.resolution)
+        self.enc_layer_norm = nn.LayerNorm(enc_hidden_size)
+        self.enc_mlp = nn.Sequential(
+            nn.Linear(enc_hidden_size, enc_hidden_size),
+            nn.ReLU(),
+            nn.Linear(enc_hidden_size, dim)
         )
 
-
-        self.slots_logsigma = nn.Sequential(
-            nn.Linear(dim, 32),
-            nn.LeakyReLU(),
-            nn.Linear(32, 2),
-            nn.LeakyReLU(),
-            nn.Flatten(),
-            nn.Linear(self.resolution[0]*self.resolution[1] * 2, dim)
-        )
 
 
         self.to_q = nn.Linear(dim, dim, bias=False)
@@ -83,11 +94,11 @@ class InvariantSlotAttention(nn.Module):
         self.norm_slots  = nn.LayerNorm(dim)
         self.norm_pre_ff = nn.LayerNorm(dim)
 
-    def encode_pos(self, encoded):
-        x = self.enc_emb(encoded)
+    def encode_pos(self, encoded, grid):
+        x = self.enc_emb(encoded, grid)
         x = spatial_flatten(x[0])
-        x = self.layer_norm(x)
-        x = self.mlp(x)
+        x = self.enc_layer_norm(x)
+        x = self.enc_mlp(x)
         return x
 
     def forward(self, inputs, n_s=None, grid=None,  *args, **kwargs):
@@ -97,32 +108,35 @@ class InvariantSlotAttention(nn.Module):
         print(f"\n\nATTENTION! ns: {n_s} ", file=sys.stderr, flush=True)
 
 
-        # mu = self.slots_mu.expand(b, n_s, -1)
-        # sigma = self.slots_logsigma.exp().expand(b, n_s, -1)
-        # slots = mu + sigma * torch.randn(mu.shape, device = device)
+        mu = self.slots_mu.expand(b, n_s, -1)
+        sigma = self.slots_logsigma.exp().expand(b, n_s, -1)
+        slots = mu + sigma * torch.randn(mu.shape, device = device)
 
-        slots_mu = self.slots_mu(inputs)
-        print(f"\n\nATTENTION! slots_mu shape: {slots_mu.shape} ", file=sys.stderr, flush=True)
-        slots_logsigma = self.slots_logsigma(inputs)
-        slots_mu, slots_log_sigma = slots_mu.sum(axis=0), slots_logsigma.sum(axis=0)
-        slots_mu, slots_log_sigma = slots_mu.reshape((1, 1, self.dim)), slots_log_sigma.reshape(
-            (1, 1, self.dim))
-        # Initialize the slots. Shape: [batch_size, num_slots, slot_size].
-        slots_init = torch.randn((b, n_s, self.dim), device = device)
-        slots_init = slots_init.type_as(inputs)
-        slots = slots_mu + slots_log_sigma * slots_init
+        # slots_mu = self.slots_mu(inputs)
+        # print(f"\n\nATTENTION! slots_mu shape: {slots_mu.shape} ", file=sys.stderr, flush=True)
+        # slots_logsigma = self.slots_logsigma(inputs)
+        # slots_mu, slots_log_sigma = slots_mu.sum(axis=0), slots_logsigma.sum(axis=0)
+        # slots_mu, slots_log_sigma = slots_mu.reshape((1, 1, self.dim)), slots_log_sigma.reshape(
+        #     (1, 1, self.dim))
+        # # Initialize the slots. Shape: [batch_size, num_slots, slot_size].
+        # slots_init = torch.randn((b, n_s, self.dim), device = device)
+        # slots_init = slots_init.type_as(inputs)
+        # slots = slots_mu + slots_log_sigma * slots_init
 
         inputs = self.norm_input(inputs)
-        S_p = 2 * torch.rand(1).item() - 1
+        S_p = 2 * torch.rand((self.num_slots, 2)) - 1
         for t in range(1, self.iters + 1):
             slots_prev = slots
 
             slots = self.norm_slots(slots)
-
             # Computes relative grids per slot, and associated key, value embeddings
             rel_grid = (self.abs_grid - S_p)
-            k = self.f(self.to_k(inputs) + self.g(rel_grid))
-            v = self.f(self.to_v(inputs) + self.g(rel_grid))
+            encoded_pos = self.encoded_pos(inputs, rel_grid)
+
+            # k = self.f(self.to_k(inputs) + self.g(rel_grid))
+            # v = self.f(self.to_v(inputs) + self.g(rel_grid))
+            k, v = self.to_k(encoded_pos), self.to_v(encoded_pos)
+            print(f"\n\nATTENTION! km v: {k.shape} {v.shape} ", file=sys.stderr, flush=True)
 
             # Inverted dot production attention.
             q = self.to_q(slots)

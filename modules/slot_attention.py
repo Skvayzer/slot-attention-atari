@@ -5,7 +5,7 @@ import torch
 from torch import nn
 from torch.nn import init
 from torch.nn import functional as F
-from utils import spatial_flatten, build_grid
+from utils import spatial_flatten, build_grid, build_isa_grid
 from modules import PosEmbeds
 
 
@@ -32,7 +32,7 @@ class InvariantSlotAttention(nn.Module):
         self.resolution = resolution
         self.dim = dim
 
-        self.abs_grid = torch.Tensor(build_grid(resolution))
+        self.abs_grid = torch.Tensor(build_isa_grid(resolution))
 
         self.slots_mu = nn.Parameter(torch.randn(1, 1, dim))
         self.slots_logsigma = nn.Parameter(torch.zeros(1, 1, dim))
@@ -130,8 +130,8 @@ class InvariantSlotAttention(nn.Module):
 
             slots = self.norm_slots(slots)
             # Computes relative grids per slot, and associated key, value embeddings
-            # rel_grid = (self.abs_grid - S_p)
-            # encoded_pos = self.encoded_pos(inputs, rel_grid)
+            rel_grid = (self.abs_grid - S_p)
+            encoded_pos = self.encoded_pos(inputs, rel_grid)
 
             # k = self.f(self.to_k(inputs) + self.g(rel_grid))
             # v = self.f(self.to_v(inputs) + self.g(rel_grid))

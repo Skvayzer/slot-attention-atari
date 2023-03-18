@@ -29,8 +29,7 @@ class SlotAttentionAE(pl.LightningModule):
                  hidden_size=32,
                  dataset='',
                  task='',
-                 quantization=False,
-                 nums=[8, 8, 8, 8],
+                 invariance=True,
                  beta=0.01,
                  lr=4e-4,
                  num_steps=int(3e5),
@@ -47,8 +46,7 @@ class SlotAttentionAE(pl.LightningModule):
         self.hidden_size = hidden_size
         self.dataset = dataset
         self.task = task
-        self.quantization = quantization
-        self.nums = nums
+        self.invariance = invariance
         self.train_dataloader = train_dataloader
 
         # Encoder
@@ -72,12 +70,12 @@ class SlotAttentionAE(pl.LightningModule):
             nn.Linear(hidden_size, slot_size)
         )
 
-        if quantization:
-            self.slots_lin = nn.Linear(16 * len(nums) + 64, hidden_size)
-            self.coord_quantizer = CoordQuantizer(nums)
-
-        self.slot_attention = InvariantSlotAttention(num_slots=num_slots, iters=num_iters, dim=slot_size,
+        if invariance:
+            self.slot_attention = InvariantSlotAttention(num_slots=num_slots, iters=num_iters, dim=slot_size,
                                                 hidden_dim=slot_size * 2)
+        else:
+            self.slot_attention = SlotAttentionBase(num_slots=num_slots, iters=num_iters, dim=slot_size,
+                                                         hidden_dim=slot_size * 2)
         self.automatic_optimization = False
         self.num_steps = num_steps
         self.lr = lr
@@ -88,11 +86,12 @@ class SlotAttentionAE(pl.LightningModule):
 
 
     def forward(self, inputs, num_slots=None, test=False):
-        encoded = self.encoder(inputs)
+        x = self.encoder(inputs)
         # print(f"\n\nATTENTION! encoded {encoded.shape} ", file=sys.stderr, flush=True)
 
-        x = self.enc_emb(encoded)
-        # print(f"\n\nATTENTION! x {x[0].shape} {x[1]} ", file=sys.stderr, flush=True)
+        if not self.invariance:
+            x = self.enc_emb(x)
+            # print(f"\n\nATTENTION! x {x[0].shape} {x[1]} ", file=sys.stderr, flush=True)
 
         x = spatial_flatten(x[0])
         # print(f"\n\nATTENTION! x {x.shape} ", file=sys.stderr, flush=True)
@@ -108,13 +107,6 @@ class SlotAttentionAE(pl.LightningModule):
             num_slots = self.num_slots
 
         slots = self.slot_attention(x, n_s=num_slots)
-
-        if self.quantization:
-            props, coords, kl_loss = self.coord_quantizer(slots, test)
-            # print("\n\nATTENTION! props/coords : ", props.shape, coords.shape, file=sys.stderr, flush=True)
-
-            slots = torch.cat([props, coords], dim=-1)
-            slots = self.slots_lin(slots)
 
         x = spatial_broadcast(slots, self.decoder_initial_size)
         x = self.dec_emb(x)

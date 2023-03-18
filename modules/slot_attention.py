@@ -5,7 +5,7 @@ import torch
 from torch import nn
 from torch.nn import init
 from torch.nn import functional as F
-from utils import spatial_flatten, build_grid, build_isa_grid
+from utils import spatial_flatten, build_grid
 from modules import PosEmbeds
 
 
@@ -32,7 +32,7 @@ class InvariantSlotAttention(nn.Module):
         self.resolution = resolution
         self.dim = dim
 
-        self.abs_grid = torch.Tensor(build_isa_grid(resolution))
+        self.abs_grid = torch.Tensor(build_grid(resolution, mode='isa'))
 
         self.slots_mu = nn.Parameter(torch.randn(1, 1, dim))
         self.slots_logsigma = nn.Parameter(torch.zeros(1, 1, dim))
@@ -58,13 +58,13 @@ class InvariantSlotAttention(nn.Module):
         # )
 
 
-        self.enc_emb = PosEmbeds(enc_hidden_size, self.resolution)
-        self.enc_layer_norm = nn.LayerNorm(enc_hidden_size)
-        self.enc_mlp = nn.Sequential(
-            nn.Linear(enc_hidden_size, enc_hidden_size),
-            nn.ReLU(),
-            nn.Linear(enc_hidden_size, dim)
-        )
+        # self.enc_emb = PosEmbeds(enc_hidden_size, self.resolution, grid=torch.Tensor(build_isa_grid(resolution)))
+        # self.enc_layer_norm = nn.LayerNorm(enc_hidden_size)
+        # self.enc_mlp = nn.Sequential(
+        #     nn.Linear(enc_hidden_size, enc_hidden_size),
+        #     nn.ReLU(),
+        #     nn.Linear(enc_hidden_size, dim)
+        # )
 
 
 
@@ -72,7 +72,7 @@ class InvariantSlotAttention(nn.Module):
         self.to_k = nn.Linear(dim, dim, bias=False)
         self.to_v = nn.Linear(dim, dim, bias=False)
 
-        self.g = nn.Linear(4, enc_hidden_size)
+        self.g = nn.Linear(2, enc_hidden_size)
         self.f = nn.Sequential(
             nn.LayerNorm(enc_hidden_size),
             nn.Linear(dim, hidden_dim),
@@ -129,14 +129,17 @@ class InvariantSlotAttention(nn.Module):
             slots_prev = slots
 
             slots = self.norm_slots(slots)
-            # Computes relative grids per slot, and associated key, value embeddings
-            rel_grid = (self.abs_grid - S_p)
-            encoded_pos = self.encoded_pos(inputs, rel_grid)
-
-            # k = self.f(self.to_k(inputs) + self.g(rel_grid))
-            # v = self.f(self.to_v(inputs) + self.g(rel_grid))
             k, v = self.to_k(inputs), self.to_v(inputs)
             print(f"\n\nATTENTION! k v: {k.shape} {v.shape} ", file=sys.stderr, flush=True)
+            print(f"\n\nATTENTION! bas grid: {self.abs_grid.shape}", file=sys.stderr, flush=True)
+
+            # Computes relative grids per slot, and associated key, value embeddings
+            rel_grid = (self.abs_grid - S_p)
+            # encoded_pos = self.encoded_pos(inputs, rel_grid)
+
+
+            k = self.f(self.to_k(inputs) + self.g(rel_grid))
+            v = self.f(self.to_v(inputs) + self.g(rel_grid))
 
             # Inverted dot production attention.
             q = self.to_q(slots)

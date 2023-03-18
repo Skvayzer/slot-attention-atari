@@ -12,7 +12,7 @@ def build_grid(resolution):
 
     ranges = [np.linspace(0., 1., num=res) for res in resolution]
     grid = np.meshgrid(*ranges, sparse=False, indexing="ij")
-    print(f"\n\nATTENTION! GRID {grid.shape}", file=sys.stderr, flush=True)
+    print(f"\n\nATTENTION! GRID {grid}", file=sys.stderr, flush=True)
 
     grid = np.stack(grid, axis=-1)
     print(f"\n\nATTENTION! GRID {grid.shape}", file=sys.stderr, flush=True)

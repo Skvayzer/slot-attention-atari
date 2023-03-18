@@ -130,13 +130,13 @@ class InvariantSlotAttention(nn.Module):
 
             slots = self.norm_slots(slots)
             # Computes relative grids per slot, and associated key, value embeddings
-            rel_grid = (self.abs_grid - S_p)
-            encoded_pos = self.encoded_pos(inputs, rel_grid)
+            # rel_grid = (self.abs_grid - S_p)
+            # encoded_pos = self.encoded_pos(inputs, rel_grid)
 
             # k = self.f(self.to_k(inputs) + self.g(rel_grid))
             # v = self.f(self.to_v(inputs) + self.g(rel_grid))
-            k, v = self.to_k(encoded_pos), self.to_v(encoded_pos)
-            print(f"\n\nATTENTION! km v: {k.shape} {v.shape} ", file=sys.stderr, flush=True)
+            k, v = self.to_k(inputs), self.to_v(inputs)
+            print(f"\n\nATTENTION! k v: {k.shape} {v.shape} ", file=sys.stderr, flush=True)
 
             # Inverted dot production attention.
             q = self.to_q(slots)

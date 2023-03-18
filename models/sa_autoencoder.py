@@ -82,8 +82,6 @@ class SlotAttentionAE(pl.LightningModule):
         self.beta = beta
         self.save_hyperparameters()
 
-        print(f"\n\nATTENTION! resolution: {resolution}, num_slots: {num_slots}, num_iter: {num_iters}, nums: {nums} ", file=sys.stderr, flush=True)
-
 
     def forward(self, inputs, num_slots=None, test=False):
         x = self.encoder(inputs)

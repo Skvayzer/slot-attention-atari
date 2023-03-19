@@ -154,6 +154,8 @@ class InvariantSlotAttention(nn.Module):
 
             print(f"\n\nATTENTION! attn: {attn.shape} ", file=sys.stderr, flush=True)
 
+            print(f"\n\nATTENTION! sp fl grid: {spatial_flatten(self.abs_grid).shape} ", file=sys.stderr, flush=True)
+
             # Updates Sp, Ss and slots.
             S_p = (attn * spatial_flatten(self.abs_grid)).sum(dim=-1, keepdim=True) / attn.sum(dim=-1, keepdim=True)
             print(f"\n\nATTENTION! S_p: {S_p.shape} ", file=sys.stderr, flush=True)

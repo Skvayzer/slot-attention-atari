@@ -100,6 +100,8 @@ class InvariantSlotAttention(nn.Module):
         x = spatial_flatten(x[0])
         x = self.enc_layer_norm(x)
         x = self.enc_mlp(x)
+        x = self.norm_input(x)
+
         return x
 
     def forward(self, inputs, n_s=None, grid=None,  *args, **kwargs):
@@ -126,7 +128,7 @@ class InvariantSlotAttention(nn.Module):
         # slots_init = slots_init.type_as(inputs)
         # slots = slots_mu + slots_log_sigma * slots_init
 
-        inputs = self.norm_input(inputs)
+        # inputs = self.norm_input(inputs)
         S_p = 2 * torch.rand((self.num_slots, 2)) - 1
         for t in range(1, self.iters + 1):
             slots_prev = slots

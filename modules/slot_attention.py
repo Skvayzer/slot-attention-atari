@@ -155,7 +155,7 @@ class InvariantSlotAttention(nn.Module):
             print(f"\n\nATTENTION! attn: {attn.shape} ", file=sys.stderr, flush=True)
 
             # Updates Sp, Ss and slots.
-            # S_p = (attn * self.abs_grid).sum(dim=-1, keepdim=True) / attn.sum(dim=-1, keepdim=True)
+            S_p = (attn * self.abs_grid).sum(dim=-1, keepdim=True) / attn.sum(dim=-1, keepdim=True)
             # S_s = (((attn + self.eps)*(grid - S_p)**2).sum(dim=-1, keepdim=True)/(attn + self.eps).sum(dim=-1, keepdim=True))**0.5
             # v1, v2 = WPCA().fit_transform(self.abs_grid, attn)
             # S_r = postprocess(v1, v2)

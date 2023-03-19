@@ -91,16 +91,16 @@ class SlotAttentionAE(pl.LightningModule):
             x = self.enc_emb(x)
             # print(f"\n\nATTENTION! x {x[0].shape} {x[1]} ", file=sys.stderr, flush=True)
             x = spatial_flatten(x[0])
-        else:
-            x = spatial_flatten(x)
+            # print(f"\n\nATTENTION! x {x.shape} ", file=sys.stderr, flush=True)
 
-        # print(f"\n\nATTENTION! x {x.shape} ", file=sys.stderr, flush=True)
+            x = self.layer_norm(x)
+            # print(f"\n\nATTENTION! x {x.shape} ", file=sys.stderr, flush=True)
 
-        x = self.layer_norm(x)
-        # print(f"\n\nATTENTION! x {x.shape} ", file=sys.stderr, flush=True)
+            x = self.mlp(x)
+            # print(f"\n\nATTENTION! x {x.shape} ", file=sys.stderr, flush=True)
 
-        x = self.mlp(x)
-        # print(f"\n\nATTENTION! x {x.shape} ", file=sys.stderr, flush=True)
+
+
 
         # print(f"\n\nATTENTION! num slots: {num_slots} ", file=sys.stderr, flush=True)
         if num_slots is None:

@@ -132,7 +132,7 @@ class InvariantSlotAttention(nn.Module):
 
             # Computes relative grids per slot, and associated key, value embeddings
             rel_grid = (self.abs_grid )#- S_p)
-            encoded_pos = self.encoded_pos(inputs, rel_grid)
+            encoded_pos = self.encode_pos(inputs, rel_grid)
             k, v = self.to_k(encoded_pos), self.to_v(encoded_pos)
             print(f"\n\nATTENTION! k v: {k.shape} {v.shape} ", file=sys.stderr, flush=True)
             print(f"\n\nATTENTION! bas grid: {self.abs_grid.shape}", file=sys.stderr, flush=True)

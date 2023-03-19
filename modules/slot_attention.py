@@ -155,10 +155,11 @@ class InvariantSlotAttention(nn.Module):
 
             print(f"\n\nATTENTION! attn: {attn.shape} ", file=sys.stderr, flush=True)
 
-            print(f"\n\nATTENTION! sp fl grid: {self.abs_grid_flattened.shape} ", file=sys.stderr, flush=True)
+            print(f"\n\nATTENTION! sp fl grid: {self.abs_grid_flattened.expand(b, self.abs_grid_flattened[0], self.abs_grid_flattened[1]).shape} ", file=sys.stderr, flush=True)
 
             # Updates Sp, Ss and slots.
-            S_p = torch.mul(attn, self.abs_grid_flattened).sum(dim=-1, keepdim=True) / attn.sum(dim=-1, keepdim=True)
+            for i in range(n_s):
+                S_p[i] = (attn[:, i] * self.abs_grid_flattened.T).sum(dim=-1, keepdim=True) / attn.sum(dim=-1, keepdim=True)
             print(f"\n\nATTENTION! S_p: {S_p.shape} ", file=sys.stderr, flush=True)
 
             # S_s = (((attn + self.eps)*(grid - S_p)**2).sum(dim=-1, keepdim=True)/(attn + self.eps).sum(dim=-1, keepdim=True))**0.5

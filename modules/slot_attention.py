@@ -152,6 +152,8 @@ class InvariantSlotAttention(nn.Module):
             updates = torch.einsum('bjd,bij->bid', v, attn)
             attn = attn / attn.sum(dim=-1, keepdim=True)
 
+            print(f"\n\nATTENTION! attn: {attn.shape} ", file=sys.stderr, flush=True)
+
             # Updates Sp, Ss and slots.
             S_p = (attn * self.abs_grid).sum(dim=-1, keepdim=True) / attn.sum(dim=-1, keepdim=True)
             # S_s = (((attn + self.eps)*(grid - S_p)**2).sum(dim=-1, keepdim=True)/(attn + self.eps).sum(dim=-1, keepdim=True))**0.5

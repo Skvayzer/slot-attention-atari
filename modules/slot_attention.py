@@ -59,6 +59,7 @@ class InvariantSlotAttention(nn.Module):
 
         self.enc_emb = PosEmbeds(enc_hidden_size, self.resolution, mode='isa')
         self.abs_grid = self.enc_emb.grid
+        self.abs_grid_flattened = self.abs_grid.reshape(-1, self.abs_grid.shape[1] * self.abs_grid.shape[2], self.abs_grid.shape[-1])
 
         self.enc_layer_norm = nn.LayerNorm(enc_hidden_size)
         self.enc_mlp = nn.Sequential(
@@ -154,10 +155,10 @@ class InvariantSlotAttention(nn.Module):
 
             print(f"\n\nATTENTION! attn: {attn.shape} ", file=sys.stderr, flush=True)
 
-            print(f"\n\nATTENTION! sp fl grid: {spatial_flatten(self.abs_grid).shape} ", file=sys.stderr, flush=True)
+            print(f"\n\nATTENTION! sp fl grid: {self.abs_grid_flattened} ", file=sys.stderr, flush=True)
 
             # Updates Sp, Ss and slots.
-            S_p = (attn * spatial_flatten(self.abs_grid)).sum(dim=-1, keepdim=True) / attn.sum(dim=-1, keepdim=True)
+            S_p = (attn * self.abs_grid_flattened).sum(dim=-1, keepdim=True) / attn.sum(dim=-1, keepdim=True)
             print(f"\n\nATTENTION! S_p: {S_p.shape} ", file=sys.stderr, flush=True)
 
             # S_s = (((attn + self.eps)*(grid - S_p)**2).sum(dim=-1, keepdim=True)/(attn + self.eps).sum(dim=-1, keepdim=True))**0.5

@@ -7,10 +7,14 @@ from utils import build_grid
 
 
 class PosEmbeds(nn.Module):
-    def __init__(self, hidden_size, resolution):
+    def __init__(self, hidden_size, resolution, mode='sa'):
         super().__init__()
-        self.linear = nn.Linear(4, hidden_size)
-        grid = torch.Tensor(build_grid(resolution))
+        if mode == 'sa':
+            self.linear = nn.Linear(4, hidden_size)
+        else:
+            self.linear = nn.Linear(2, hidden_size)
+
+        grid = torch.Tensor(build_grid(resolution, mode=mode))
 
         self.grid = nn.Parameter(grid, requires_grad=False)
 

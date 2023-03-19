@@ -57,8 +57,8 @@ class InvariantSlotAttention(nn.Module):
         # )
 
 
-        self.enc_emb = PosEmbeds(enc_hidden_size, self.resolution)
-        self.abs_grid = spatial_flatten(self.enc_emb.grid)
+        self.enc_emb = PosEmbeds(enc_hidden_size, self.resolution, mode='isa')
+        self.abs_grid = self.enc_emb.grid
 
         self.enc_layer_norm = nn.LayerNorm(enc_hidden_size)
         self.enc_mlp = nn.Sequential(
@@ -103,7 +103,9 @@ class InvariantSlotAttention(nn.Module):
         return x
 
     def forward(self, inputs, n_s=None, grid=None,  *args, **kwargs):
-        b, n, d, device = *inputs.shape, inputs.device
+        encoded_pos = self.encode_pos(inputs, self.abs_grid)
+
+        b, n, d, device = *encoded_pos.shape, encoded_pos.device
         if n_s is None:
             n_s = self.num_slots
         print(f"\n\nATTENTION! ns: {n_s} ", file=sys.stderr, flush=True)

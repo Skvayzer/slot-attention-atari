@@ -32,7 +32,6 @@ class InvariantSlotAttention(nn.Module):
         self.resolution = resolution
         self.dim = dim
 
-        self.abs_grid = spatial_flatten(torch.Tensor(build_grid(resolution, mode='isa')))
 
         self.slots_mu = nn.Parameter(torch.randn(1, 1, dim))
         self.slots_logsigma = nn.Parameter(torch.zeros(1, 1, dim))
@@ -59,6 +58,8 @@ class InvariantSlotAttention(nn.Module):
 
 
         self.enc_emb = PosEmbeds(enc_hidden_size, self.resolution)
+        self.abs_grid = spatial_flatten(self.enc_emb.grid)
+
         self.enc_layer_norm = nn.LayerNorm(enc_hidden_size)
         self.enc_mlp = nn.Sequential(
             nn.Linear(enc_hidden_size, enc_hidden_size),

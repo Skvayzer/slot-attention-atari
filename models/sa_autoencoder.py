@@ -72,7 +72,7 @@ class SlotAttentionAE(pl.LightningModule):
 
         if invariance:
             self.slot_attention = InvariantSlotAttention(num_slots=num_slots, iters=num_iters, dim=slot_size,
-                                                hidden_dim=slot_size * 2)
+                                                hidden_dim=slot_size * 2, enc_hidden_size=hidden_size)
         else:
             self.slot_attention = SlotAttentionBase(num_slots=num_slots, iters=num_iters, dim=slot_size,
                                                          hidden_dim=slot_size * 2)

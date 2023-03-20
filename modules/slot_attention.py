@@ -154,12 +154,14 @@ class InvariantSlotAttention(nn.Module):
             attn = attn / attn.sum(dim=-1, keepdim=True)
 
             print(f"\n\nATTENTION! attn: {attn.shape} ", file=sys.stderr, flush=True)
-            abs_grid_expanded = self.abs_grid_flattened.expand(b, self.abs_grid_flattened.shape[0], self.abs_grid_flattened.shape[1])
-            print(f"\n\nATTENTION! sp fl grid: {abs_grid_expanded.shape} ", file=sys.stderr, flush=True)
+            # abs_grid_expanded = self.abs_grid_flattened.expand(b, self.abs_grid_flattened.shape[0], self.abs_grid_flattened.shape[1])
+            print(f"\n\nATTENTION! sp fl grid: {attn[:, 0].shape} ", file=sys.stderr, flush=True)
+            
+            print(f"\n\nATTENTION! a: {self.abs_grid_flattened.shape} ", file=sys.stderr, flush=True)
 
             # Updates Sp, Ss and slots.
             for i in range(n_s):
-                S_p[i] = (attn[:, i] * abs_grid_expanded).sum(dim=-1, keepdim=True) / attn.sum(dim=-1, keepdim=True)
+                S_p[i] = (attn[:, i] * self.abs_grid_flattened).sum(dim=-1, keepdim=True) / attn.sum(dim=-1, keepdim=True)
             print(f"\n\nATTENTION! S_p: {S_p.shape} ", file=sys.stderr, flush=True)
 
             # S_s = (((attn + self.eps)*(grid - S_p)**2).sum(dim=-1, keepdim=True)/(attn + self.eps).sum(dim=-1, keepdim=True))**0.5

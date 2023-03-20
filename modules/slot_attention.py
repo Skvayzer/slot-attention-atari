@@ -59,7 +59,7 @@ class InvariantSlotAttention(nn.Module):
 
         self.enc_emb = PosEmbeds(enc_hidden_size, self.resolution, mode='isa')
         self.abs_grid = self.enc_emb.grid
-        self.abs_grid_flattened = self.abs_grid.reshape(self.abs_grid.shape[1] * self.abs_grid.shape[2], self.abs_grid.shape[-1]).T
+        self.abs_grid_flattened = self.abs_grid.reshape(self.abs_grid.shape[1] * self.abs_grid.shape[2], self.abs_grid.shape[-1]).T.cuda()
 
         self.enc_layer_norm = nn.LayerNorm(enc_hidden_size)
         self.enc_mlp = nn.Sequential(

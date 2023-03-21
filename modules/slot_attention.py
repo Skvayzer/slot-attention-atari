@@ -134,7 +134,7 @@ class InvariantSlotAttention(nn.Module):
         print(f"\n\nATTENTION! expand abs grid: {self.abs_grid.expand(b, n_s, -1, -1, -1).shape}", file=sys.stderr, flush=True)
 
         rel_grid = (self.abs_grid.expand(b, n_s, -1, -1, -1) - S_p.view(b, n_s, 1, 1, 2))
-        print(f"\n\nATTENTION! rel_grid: {rel_gridv.shape} ", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
 
         for t in range(1, self.iters + 1):
             slots_prev = slots

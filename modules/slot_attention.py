@@ -130,10 +130,10 @@ class InvariantSlotAttention(nn.Module):
         # inputs = self.norm_input(inputs)
         S_p = 2 * torch.rand((b, n_s, 2)) - 1
         print(f"\n\nATTENTION! abs grid: {self.abs_grid.shape}", file=sys.stderr, flush=True)
-        print(f"\n\nATTENTION! S_p: {S_p.view(-1, -1, 1, 1, -1).shape} ", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! S_p: {S_p.view(b, n_s, 1, 1, 2).shape} ", file=sys.stderr, flush=True)
         print(f"\n\nATTENTION! expand abs grid: {self.abs_grid.expand(b, n_s, -1, -1, -1).shape}", file=sys.stderr, flush=True)
 
-        rel_grid = (self.abs_grid.expand(b, n_s, -1, -1, -1) - S_p.view(-1, -1, 1, 1, -1))
+        rel_grid = (self.abs_grid.expand(b, n_s, -1, -1, -1) - S_p.view(b, n_s, 1, 1, 2))
         for t in range(1, self.iters + 1):
             slots_prev = slots
 

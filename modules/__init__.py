@@ -1,6 +1,6 @@
 from .decoder import Decoder
 from .pos_embeds import PosEmbeds, ISAPosEmbeds
-from .slot_attention import SlotAttention, SlotAttentionBase, SlotAttentionGMM, InvariantSlotAttention, InvariantSlotAttentionAE
+from .slot_attention import SlotAttention, SlotAttentionBase, SlotAttentionGMM, InvariantSlotAttention
 from .encoder import Encoder
 from .vsa import get_vsa_grid
 from .quantizer import CoordQuantizer
@@ -17,5 +17,4 @@ __all__ = [
     'ClevrQuantizer2',
     'CoordQuantizer',
     'InvariantSlotAttention',
-    'InvariantSlotAttentionAE'
 ]

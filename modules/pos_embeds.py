@@ -19,8 +19,9 @@ class ISAPosEmbeds(nn.Module):
     def forward(self, inputs, grid=None):
         if grid is None:
             grid = self.grid
-        pos_emb = self.linear(grid).moveaxis(4, 2)
         print("\n\nATTENTION! inputs : ", inputs.shape, file=sys.stderr, flush=True)
+
+        pos_emb = self.linear(grid).moveaxis(4, 2)
         print("\n\nATTENTION! pos_emb : ", pos_emb.shape, file=sys.stderr, flush=True)
 
         return inputs + pos_emb, pos_emb.expand(inputs.shape[0], -1, -1, -1),

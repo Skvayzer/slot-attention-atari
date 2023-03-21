@@ -104,11 +104,14 @@ class InvariantSlotAttention(nn.Module):
         return x
 
     def forward(self, inputs, n_s=None, grid=None,  *args, **kwargs):
-        encoded_pos = self.encode_pos(inputs, self.abs_grid)
 
-        b, n, d, device = *encoded_pos.shape, encoded_pos.device
         if n_s is None:
             n_s = self.num_slots
+        encoded_pos = self.encode_pos(inputs, self.abs_grid.expand(inputs.shape[0], n_s, -1, -1, -1))
+
+        b, n, d, device = *encoded_pos.shape, encoded_pos.device
+
+
         print(f"\n\nATTENTION! ns: {n_s} ", file=sys.stderr, flush=True)
 
 

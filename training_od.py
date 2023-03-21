@@ -9,7 +9,7 @@ from pytorch_lightning.loggers import WandbLogger
 from argparse import ArgumentParser
 import argparse
 
-from models import SlotAttentionAE
+from models import SlotAttentionAE, InvariantSlotAttentionAE
 from torch.optim import lr_scheduler
 
 from torchvision.utils import save_image
@@ -143,7 +143,7 @@ val_loader = DataLoader(val_dataset, batch_size=args.batch_size, num_workers=arg
                         drop_last=True, collate_fn=collate_fn)
 
 monitor = 'Validation MSE'
-autoencoder = SlotAttentionAE(**dict_args, resolution=resize, train_dataloader=train_loader)
+autoencoder = InvariantSlotAttentionAE(**dict_args, resolution=resize, train_dataloader=train_loader)
 autoencoder.to(device)
 
 wandb_logger = WandbLogger(project=project_name, name=f'{args.task}: nums {args.nums!r} s {args.seed} kl {args.beta}',

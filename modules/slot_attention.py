@@ -129,6 +129,9 @@ class InvariantSlotAttention(nn.Module):
 
         # inputs = self.norm_input(inputs)
         S_p = 2 * torch.rand((b, n_s, 2)) - 1
+        print(f"\n\nATTENTION! abs grid: {self.abs_grid.shape}", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! S_p: {S_p.shape} ", file=sys.stderr, flush=True)
+
         rel_grid = (self.abs_grid - S_p)
         for t in range(1, self.iters + 1):
             slots_prev = slots
@@ -140,7 +143,6 @@ class InvariantSlotAttention(nn.Module):
             encoded_pos = self.encode_pos(inputs, rel_grid.cuda())
             k, v = self.to_k(encoded_pos), self.to_v(encoded_pos)
             print(f"\n\nATTENTION! k v: {k.shape} {v.shape} ", file=sys.stderr, flush=True)
-            print(f"\n\nATTENTION! bas grid: {self.abs_grid.shape}", file=sys.stderr, flush=True)
 
             # k = self.f(self.to_k(inputs) + self.g(rel_grid))
             # v = self.f(self.to_v(inputs) + self.g(rel_grid))

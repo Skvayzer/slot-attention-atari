@@ -134,13 +134,15 @@ class InvariantSlotAttention(nn.Module):
         print(f"\n\nATTENTION! expand abs grid: {self.abs_grid.expand(b, n_s, -1, -1, -1).shape}", file=sys.stderr, flush=True)
 
         rel_grid = (self.abs_grid.expand(b, n_s, -1, -1, -1) - S_p.view(b, n_s, 1, 1, 2))
+        print(f"\n\nATTENTION! rel_grid: {rel_gridv.shape} ", file=sys.stderr, flush=True)
+
         for t in range(1, self.iters + 1):
             slots_prev = slots
 
             slots = self.norm_slots(slots)
 
             # Computes relative grids per slot, and associated key, value embeddings
-            rel_grid = (self.abs_grid - S_p)
+            rel_grid = (self.abs_grid.expand(b, n_s, -1, -1, -1) - S_p.view(b, n_s, 1, 1, 2))
             encoded_pos = self.encode_pos(inputs, rel_grid.cuda())
             k, v = self.to_k(encoded_pos), self.to_v(encoded_pos)
             print(f"\n\nATTENTION! k v: {k.shape} {v.shape} ", file=sys.stderr, flush=True)

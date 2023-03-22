@@ -57,7 +57,7 @@ class InvariantSlotAttention(nn.Module):
         # )
 
 
-        self.enc_emb = ISAPosEmbeds(enc_hidden_size, self.resolution)
+        self.enc_emb = PosEmbeds(enc_hidden_size, self.resolution)
         self.abs_grid = self.enc_emb.grid
         self.abs_grid_flattened = self.abs_grid.reshape(self.abs_grid.shape[1] * self.abs_grid.shape[2], self.abs_grid.shape[-1]).cuda()
 
@@ -136,17 +136,23 @@ class InvariantSlotAttention(nn.Module):
         print(f"\n\nATTENTION! S_p: {S_p.view(b, n_s, 1, 1, 2).shape} ", file=sys.stderr, flush=True)
         print(f"\n\nATTENTION! expand abs grid: {self.abs_grid.expand(b, n_s, -1, -1, -1).shape}", file=sys.stderr, flush=True)
 
-        rel_grid = (self.abs_grid.expand(b, n_s, -1, -1, -1) - S_p.view(b, n_s, 1, 1, 2))
-        print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
+        # rel_grid = (self.abs_grid.expand(b, n_s, -1, -1, -1) - S_p.view(b, n_s, 1, 1, 2))
+        # print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
 
         for t in range(1, self.iters + 1):
+            # for s in range(n_s):
             slots_prev = slots
 
             slots = self.norm_slots(slots)
 
             # Computes relative grids per slot, and associated key, value embeddings
-            rel_grid = (self.abs_grid.expand(b, n_s, -1, -1, -1) - S_p.view(b, n_s, 1, 1, 2))
+            # [64, 20, 128, 128, 2]
+            # rel_grid = (self.abs_grid.expand(b, n_s, -1, -1, -1) - S_p.view(b, n_s, 1, 1, 2))
+            rel_grid = (self.abs_grid)
+
             encoded_pos = self.encode_pos(inputs, rel_grid.cuda())
+
+
             k, v = self.to_k(encoded_pos), self.to_v(encoded_pos)
             print(f"\n\nATTENTION! k v: {k.shape} {v.shape} ", file=sys.stderr, flush=True)
 
@@ -157,8 +163,9 @@ class InvariantSlotAttention(nn.Module):
             q = self.to_q(slots)
             dots = torch.einsum('bid,bjd->bij', q, k) * self.scale
             attn = dots.softmax(dim=1) + self.eps
-            updates = torch.einsum('bjd,bij->bid', v, attn)
             attn = attn / attn.sum(dim=-1, keepdim=True)
+            updates = torch.einsum('bjd,bij->bid', v, attn)
+
 
             print(f"\n\nATTENTION! attn: {attn.shape} ", file=sys.stderr, flush=True)
             # abs_grid_expanded = self.abs_grid_flattened.expand(b, self.abs_grid_flattened.shape[0], self.abs_grid_flattened.shape[1])

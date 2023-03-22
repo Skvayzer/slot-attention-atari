@@ -163,6 +163,8 @@ class InvariantSlotAttention(nn.Module):
 
             # Inverted dot production attention.
             q = self.to_q(slots)
+            print(f"\n\nATTENTION! q: {q.shape} ", file=sys.stderr, flush=True)
+
             dots = torch.einsum('bid,bjd->bij', q, k) * self.scale
             attn = dots.softmax(dim=1) + self.eps
             attn = attn / attn.sum(dim=-1, keepdim=True)

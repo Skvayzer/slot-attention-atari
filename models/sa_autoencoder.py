@@ -60,7 +60,8 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         self.decoder = Decoder(num_channels=hidden_size)
 
         # self.enc_emb = ISAPosEmbeds(hidden_size, self.resolution)
-        self.dec_emb = ISAPosEmbeds(hidden_size, self.decoder_initial_size)
+        # self.dec_emb = ISAPosEmbeds(hidden_size, self.decoder_initial_size)
+        self.h = nn.Linear(2, hidden_size)
 
         self.layer_norm = nn.LayerNorm(hidden_size)
         self.mlp = nn.Sequential(
@@ -108,8 +109,11 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         slots, rel_grid = self.slot_attention(x, n_s=num_slots)
 
         x = spatial_broadcast(slots, self.decoder_initial_size)
-        x = self.dec_emb(x, rel_grid)
-        x = self.decoder(x[0])
+        # x = self.dec_emb(x, rel_grid)
+        print(f"\n\nATTENTION! before dec: {x.shape} ", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! self.h(rel_grid): {self.h(rel_grid).shape} ", file=sys.stderr, flush=True)
+
+        x = self.decoder(x + self.h(rel_grid))
 
         x = x.reshape(inputs.shape[0], num_slots, *x.shape[1:])
         recons, masks = torch.split(x, self.in_channels, dim=2)

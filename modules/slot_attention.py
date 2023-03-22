@@ -163,6 +163,10 @@ class InvariantSlotAttention(nn.Module):
 
             # k, v = self.to_k(encoded_pos), self.to_v(encoded_pos)
 
+            e = self.to_k(inputs)
+            r = self.g(rel_grid)
+            print(f"\n\nATTENTION! e r: {e.shape} {r.shape} ", file=sys.stderr, flush=True)
+
             k = self.f(self.to_k(inputs) + self.g(rel_grid))
             v = self.f(self.to_v(inputs) + self.g(rel_grid))
             print(f"\n\nATTENTION! k v: {k.shape} {v.shape} ", file=sys.stderr, flush=True)

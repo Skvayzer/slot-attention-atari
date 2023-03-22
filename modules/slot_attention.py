@@ -107,7 +107,8 @@ class InvariantSlotAttention(nn.Module):
 
         if n_s is None:
             n_s = self.num_slots
-        encoded_pos = self.encode_pos(inputs, self.abs_grid.expand(inputs.shape[0], n_s, -1, -1, -1))
+        # encoded_pos = self.encode_pos(inputs, self.abs_grid.expand(inputs.shape[0], n_s, -1, -1, -1))
+        encoded_pos = self.encode_pos(inputs, self.abs_grid)
 
         b, n, d, device = *encoded_pos.shape, encoded_pos.device
 

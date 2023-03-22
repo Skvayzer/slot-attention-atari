@@ -175,13 +175,14 @@ class InvariantSlotAttention(nn.Module):
             q = self.to_q(slots)
             print(f"\n\nATTENTION! q: {q.shape} ", file=sys.stderr, flush=True)
 
-            dots = torch.einsum('bkid,bkjd->bkij', q, k) * self.scale
+            dots = torch.einsum('bid,bijd->bij', q, k) * self.scale
             attn = dots.softmax(dim=1) + self.eps
             attn = attn / attn.sum(dim=-1, keepdim=True)
-            updates = torch.einsum('bkjd,bkij->bkid', v, attn)
-
-
             print(f"\n\nATTENTION! attn: {attn.shape} ", file=sys.stderr, flush=True)
+
+            updates = torch.einsum('bijd,bij->bid', v, attn)
+
+
             # abs_grid_expanded = self.abs_grid_flattened.expand(b, self.abs_grid_flattened.shape[0], self.abs_grid_flattened.shape[1])
             print(f"\n\nATTENTION! updates: {updates.shape} ", file=sys.stderr, flush=True)
 

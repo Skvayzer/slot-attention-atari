@@ -103,14 +103,21 @@ class InvariantSlotAttention(nn.Module):
 
         return x
 
+    def preprocess(self, encoded):
+        x = spatial_flatten(encoded)
+        x = self.enc_layer_norm(x)
+        x = self.enc_mlp(x)
+        x = self.norm_input(x)
+
+        return x
     def forward(self, inputs, n_s=None, grid=None,  *args, **kwargs):
 
         if n_s is None:
             n_s = self.num_slots
         # encoded_pos = self.encode_pos(inputs, self.abs_grid.expand(inputs.shape[0], n_s, -1, -1, -1))
-        encoded_pos = self.encode_pos(inputs, self.abs_grid)
+        inputs = self.preprocess(inputs)
 
-        b, n, d, device = *encoded_pos.shape, encoded_pos.device
+        b, n, d, device = *inputs.shape, inputs.device
 
 
         print(f"\n\nATTENTION! ns: {n_s} ", file=sys.stderr, flush=True)
@@ -132,10 +139,10 @@ class InvariantSlotAttention(nn.Module):
         # slots = slots_mu + slots_log_sigma * slots_init
 
         # inputs = self.norm_input(inputs)
-        S_p = 2 * torch.rand((b, n_s, 2)).cuda() - 1
-        print(f"\n\nATTENTION! abs grid: {self.abs_grid.shape}", file=sys.stderr, flush=True)
+        S_p = 2 * torch.rand((b, n_s, 1, 2)).cuda() - 1
+        print(f"\n\nATTENTION! abs grid: {self.abs_grid_flattened.shape}", file=sys.stderr, flush=True)
         print(f"\n\nATTENTION! S_p: {S_p.view(b, n_s, 1, 1, 2).shape} ", file=sys.stderr, flush=True)
-        print(f"\n\nATTENTION! expand abs grid: {self.abs_grid.expand(b, n_s, -1, -1, -1).shape}", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! expand abs grid: {self.abs_grid_flattened.expand(b, n_s, -1, 2).shape}", file=sys.stderr, flush=True)
 
         # rel_grid = (self.abs_grid.expand(b, n_s, -1, -1, -1) - S_p.view(b, n_s, 1, 1, 2))
         # print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
@@ -149,17 +156,16 @@ class InvariantSlotAttention(nn.Module):
             # Computes relative grids per slot, and associated key, value embeddings
             # [64, 20, 128, 128, 2]
             # rel_grid = (self.abs_grid.expand(b, n_s, -1, -1, -1) - S_p.view(b, n_s, 1, 1, 2))
-            rel_grid = (self.abs_grid)
+            rel_grid = (self.abs_grid_flattened.expand(b, n_s, -1, 2) - S_p)
 
-            encoded_pos = self.encode_pos(inputs, rel_grid.cuda())
+            # encoded_pos = self.encode_pos(inputs, rel_grid.cuda())
+            # print(f"\n\nATTENTION! encoded pos: {encoded_pos.shape}", file=sys.stderr, flush=True)
 
-            print(f"\n\nATTENTION! encoded pos: {encoded_pos.shape}", file=sys.stderr, flush=True)
+            # k, v = self.to_k(encoded_pos), self.to_v(encoded_pos)
 
-            k, v = self.to_k(encoded_pos), self.to_v(encoded_pos)
+            k = self.f(self.to_k(inputs) + self.g(rel_grid))
+            v = self.f(self.to_v(inputs) + self.g(rel_grid))
             print(f"\n\nATTENTION! k v: {k.shape} {v.shape} ", file=sys.stderr, flush=True)
-
-            # k = self.f(self.to_k(inputs) + self.g(rel_grid))
-            # v = self.f(self.to_v(inputs) + self.g(rel_grid))
 
             # Inverted dot production attention.
             q = self.to_q(slots)

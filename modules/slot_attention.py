@@ -180,7 +180,7 @@ class InvariantSlotAttention(nn.Module):
             attn = attn / attn.sum(dim=-1, keepdim=True)
             print(f"\n\nATTENTION! attn: {attn.shape} ", file=sys.stderr, flush=True)
 
-            updates = torch.einsum('bijd,bij->bid', v, attn)
+            updates = torch.einsum('bid,bij->bid', v, attn)
 
 
             # abs_grid_expanded = self.abs_grid_flattened.expand(b, self.abs_grid_flattened.shape[0], self.abs_grid_flattened.shape[1])
@@ -190,7 +190,7 @@ class InvariantSlotAttention(nn.Module):
 
             # Updates Sp, Ss and slots.
             for i in range(n_s):
-                S_p[:, i, :] = (attn[:, i] @ self.abs_grid_flattened)/ attn[:, i].sum(dim=-1, keepdim=True)
+                S_p[:, i, 0, :] = (attn[:, i] @ self.abs_grid_flattened)/ attn[:, i].sum(dim=-1, keepdim=True)
 
             print(f"\n\nATTENTION! S_p: {S_p.shape} ", file=sys.stderr, flush=True)
 

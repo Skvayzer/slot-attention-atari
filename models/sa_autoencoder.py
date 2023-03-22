@@ -54,13 +54,13 @@ class InvariantSlotAttentionAE(pl.LightningModule):
             *[nn.Sequential(nn.Conv2d(hidden_size, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU()) for _ in
               range(3)]
         )
-        self.decoder_initial_size = (8, 8)
+        self.decoder_initial_size = (16, 16)
 
         # Decoder
         self.decoder = Decoder(num_channels=hidden_size)
 
         # self.enc_emb = ISAPosEmbeds(hidden_size, self.resolution)
-        # self.dec_emb = ISAPosEmbeds(hidden_size, self.decoder_initial_size)
+        self.dec_emb = ISAPosEmbeds(hidden_size, self.decoder_initial_size)
         self.h = nn.Linear(2, hidden_size)
 
         self.layer_norm = nn.LayerNorm(hidden_size)
@@ -106,10 +106,14 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         if num_slots is None:
             num_slots = self.num_slots
 
-        slots, rel_grid = self.slot_attention(x, n_s=num_slots)
+        slots, S_p = self.slot_attention(x, n_s=num_slots)
+        print(f"\n\nATTENTION! before dec S_p: {S_p.shape} ", file=sys.stderr, flush=True)
 
         x = spatial_broadcast(slots, self.decoder_initial_size)
-        # x = self.dec_emb(x, rel_grid)
+        _, pos_emb = self.dec_emb(x)
+        print(f"\n\nATTENTION! before dec pos emb: {pos_emb.shape} ", file=sys.stderr, flush=True)
+
+        rel_grid = pos_emb - S_p
         print(f"\n\nATTENTION! before dec: {x.shape} ", file=sys.stderr, flush=True)
         print(f"\n\nATTENTION! self.h(rel_grid): {self.h(rel_grid).shape} ", file=sys.stderr, flush=True)
 
@@ -267,7 +271,7 @@ class SlotAttentionAE(pl.LightningModule):
         self.decoder = Decoder(num_channels=hidden_size)
 
         self.enc_emb = PosEmbeds(hidden_size, self.resolution)
-        self.dec_emb = PosEmbeds(hidden_size, self.decoder_initial_size, proj_dim=2)
+        self.dec_emb = PosEmbeds(hidden_size, self.decoder_initial_size)
 
         self.layer_norm = nn.LayerNorm(hidden_size)
         self.mlp = nn.Sequential(
@@ -277,7 +281,7 @@ class SlotAttentionAE(pl.LightningModule):
         )
 
         if invariance:
-            self.slot_attention = InvariantSlotAttention(num_slots=num_slots, iters=num_iters, dim=slot_size,
+            self.slot_attention = SlotAttentionBase(num_slots=num_slots, iters=num_iters, dim=slot_size,
                                                          hidden_dim=slot_size * 2, enc_hidden_size=hidden_size)
         else:
             self.slot_attention = SlotAttentionBase(num_slots=num_slots, iters=num_iters, dim=slot_size,
@@ -308,10 +312,10 @@ class SlotAttentionAE(pl.LightningModule):
         if num_slots is None:
             num_slots = self.num_slots
 
-        slots, rel_grid = self.slot_attention(x, n_s=num_slots)
+        slots = self.slot_attention(x, n_s=num_slots)
 
         x = spatial_broadcast(slots, self.decoder_initial_size)
-        x = self.dec_emb(x, rel_grid)
+        x = self.dec_emb(x)
         x = self.decoder(x[0])
 
         x = x.reshape(inputs.shape[0], num_slots, *x.shape[1:])

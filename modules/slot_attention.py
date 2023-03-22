@@ -146,7 +146,7 @@ class InvariantSlotAttention(nn.Module):
 
         # rel_grid = (self.abs_grid.expand(b, n_s, -1, -1, -1) - S_p.view(b, n_s, 1, 1, 2))
         # print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
-        rel_grid = (self.abs_grid_flattened.expand(b, n_s, -1, 2) - S_p)
+        # rel_grid = (self.abs_grid_flattened.expand(b, n_s, -1, 2) - S_p)
 
         for t in range(1, self.iters + 1):
             # for s in range(n_s):
@@ -208,7 +208,7 @@ class InvariantSlotAttention(nn.Module):
                 slots = slots.reshape(b, -1, d)
                 slots = slots + self.mlp(self.norm_pre_ff(slots))
 
-        return slots, rel_grid
+        return slots, S_p
 
 
 class SlotAttentionBase(nn.Module):

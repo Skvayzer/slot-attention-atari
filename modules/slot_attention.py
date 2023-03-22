@@ -153,6 +153,7 @@ class InvariantSlotAttention(nn.Module):
 
             encoded_pos = self.encode_pos(inputs, rel_grid.cuda())
 
+            print(f"\n\nATTENTION! encoded pos: {encoded_pos.shape}", file=sys.stderr, flush=True)
 
             k, v = self.to_k(encoded_pos), self.to_v(encoded_pos)
             print(f"\n\nATTENTION! k v: {k.shape} {v.shape} ", file=sys.stderr, flush=True)

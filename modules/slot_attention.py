@@ -57,7 +57,7 @@ class InvariantSlotAttention(nn.Module):
         # )
 
 
-        self.enc_emb = PosEmbeds(enc_hidden_size, self.resolution)
+        self.enc_emb = ISAPosEmbeds(enc_hidden_size, self.resolution)
         self.abs_grid = self.enc_emb.grid
         self.abs_grid_flattened = self.abs_grid.reshape(self.abs_grid.shape[1] * self.abs_grid.shape[2], self.abs_grid.shape[-1]).cuda()
 

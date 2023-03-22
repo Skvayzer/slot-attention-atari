@@ -108,12 +108,12 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
         slots, rel_grid = self.slot_attention(x, n_s=num_slots)
 
-        x = spatial_broadcast(slots, self.decoder_initial_size)
+        x = spatial_broadcast(slots, self.resolution)
         # x = self.dec_emb(x, rel_grid)
         print(f"\n\nATTENTION! before dec: {x.shape} ", file=sys.stderr, flush=True)
         print(f"\n\nATTENTION! self.h(rel_grid): {self.h(rel_grid).shape} ", file=sys.stderr, flush=True)
 
-        x = self.decoder(x + self.h(rel_grid))
+        x = self.decoder(x.unsqueeze(dim=1) + self.h(rel_grid))
 
         x = x.reshape(inputs.shape[0], num_slots, *x.shape[1:])
         recons, masks = torch.split(x, self.in_channels, dim=2)

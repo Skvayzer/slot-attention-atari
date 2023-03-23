@@ -54,7 +54,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
             *[nn.Sequential(nn.Conv2d(hidden_size, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU()) for _ in
               range(3)]
         )
-        self.decoder_initial_size = (16, 16)
+        self.decoder_initial_size = (8, 8)
 
         # Decoder
         self.decoder = Decoder(num_channels=hidden_size)

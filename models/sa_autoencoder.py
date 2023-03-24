@@ -22,7 +22,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
     def __init__(self,
                  resolution=(128, 128),
                  num_slots=10,
-                 val_num_slots=20,
+                 val_num_slots=10,
                  num_iters=3,
                  in_channels=3,
                  slot_size=32,
@@ -72,9 +72,9 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
         if invariance:
             self.slot_attention = InvariantSlotAttention(num_slots=num_slots, iters=num_iters, dim=slot_size,
-                                                hidden_dim=slot_size * 2, enc_hidden_size=hidden_size)
+                                                hidden_dim=slot_size * 2, resolution=resolution, enc_hidden_size=hidden_size)
         else:
-            self.slot_attention = SlotAttentionBase(num_slots=num_slots, iters=num_iters, dim=slot_size,
+            self.slot_attention = SlotAttentionBase(num_slots=num_slots, iters=num_iters, dim=slot_size, resolution=resolution,
                                                          hidden_dim=slot_size * 2)
         self.automatic_optimization = False
         self.num_steps = num_steps

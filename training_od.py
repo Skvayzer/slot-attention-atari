@@ -134,9 +134,11 @@ transforms = torchvision.transforms.Compose([
     torchvision.transforms.ToTensor()
 ])
 train_dataset, val_dataset = None, None
+collation = None
 if dataset=='seaquest':
     train_dataset = ImageFolder(root=args.train_path, transform=transforms)
     val_dataset = ImageFolder(root=args.val_path, transform=transforms)
+    collation = collate_fn
 elif dataset=='tetrominoes':
     train_dataset = MultiDSprites(path_to_dataset=(args.train_path + '/tetrominoes_train.npz'), mode='tetraminoes')
     val_dataset = MultiDSprites(path_to_dataset=(args.train_path + '/tetrominoes_val.npz'), mode='tetraminoes')
@@ -145,7 +147,7 @@ elif dataset=='tetrominoes':
 train_loader = DataLoader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True,
                           drop_last=True, collate_fn=collate_fn)
 val_loader = DataLoader(val_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=False,
-                        drop_last=True, collate_fn=collate_fn)
+                        drop_last=True, collate_fn=collation)
 
 monitor = 'Validation MSE'
 autoencoder = InvariantSlotAttentionAE(**dict_args, resolution=resize, train_dataloader=train_loader)

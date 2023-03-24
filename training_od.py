@@ -152,8 +152,8 @@ val_loader = DataLoader(val_dataset, batch_size=args.batch_size, num_workers=arg
 monitor = 'Validation MSE'
 if dataset == 'tetrominoes':
     # autoencoder = InvariantSlotAttentionAE(**dict_args, resolution=resize, train_dataloader=train_loader)
-    autoencoder = InvariantSlotAttentionAE(resolution=(35, 35), hidden_size = 32, decoder_initial_size=(35, 35),
-                     num_slots=4, train_dataloader=train_loader, **dict_args)
+    autoencoder = InvariantSlotAttentionAE(resolution=(35, 35), hidden_size=32, decoder_initial_size=(35, 35),
+                     num_slots=4, enc_hidden_size=32, train_dataloader=train_loader, **dict_args)
 else:
     autoencoder = InvariantSlotAttentionAE(**dict_args, resolution=resize, train_dataloader=train_loader)
 autoencoder.to(device)

@@ -54,12 +54,14 @@ class InvariantSlotAttentionAE(pl.LightningModule):
             *[nn.Sequential(nn.Conv2d(hidden_size, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU()) for _ in
               range(3)]
         )
-        self.decoder_initial_size = (8, 8)
+
 
         # Decoder
         if dataset=='seaquest':
+            self.decoder_initial_size = (8, 8)
             self.decoder = Decoder(num_channels=hidden_size)
         else:
+            self.decoder_initial_size = self.resolution
             self.decoder = MultiDspritesDecoder(in_channels=self.slot_size,
                                    hidden_channels=self.hidden_size,
                                    out_channels=4,

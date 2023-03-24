@@ -9,7 +9,7 @@ from torch import nn
 from torch.nn import functional as F
 from torch.optim import lr_scheduler
 
-from modules import Decoder, PosEmbeds, ISAPosEmbeds, CoordQuantizer
+from modules import Decoder, PosEmbeds, ISAPosEmbeds, CoordQuantizer, MultiDspritesDecoder
 from modules.slot_attention import SlotAttentionBase, InvariantSlotAttention
 from utils import spatial_broadcast, spatial_flatten, adjusted_rand_index, mask_iou
 
@@ -57,7 +57,13 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         self.decoder_initial_size = (8, 8)
 
         # Decoder
-        self.decoder = Decoder(num_channels=hidden_size)
+        if dataset=='seaquest':
+            self.decoder = Decoder(num_channels=hidden_size)
+        else:
+            self.decoder = MultiDspritesDecoder(in_channels=self.slot_size,
+                                   hidden_channels=self.hidden_size,
+                                   out_channels=4,
+                                   mode=dataset)
 
         # self.enc_emb = ISAPosEmbeds(hidden_size, self.resolution)
         self.dec_emb = ISAPosEmbeds(hidden_size, self.decoder_initial_size)

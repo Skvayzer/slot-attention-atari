@@ -1,4 +1,4 @@
-from .decoder import Decoder
+from .decoder import Decoder, MultiDspritesDecoder
 from .pos_embeds import PosEmbeds, ISAPosEmbeds
 from .slot_attention import SlotAttention, SlotAttentionBase, SlotAttentionGMM, InvariantSlotAttention
 from .encoder import Encoder
@@ -17,4 +17,5 @@ __all__ = [
     'ClevrQuantizer2',
     'CoordQuantizer',
     'InvariantSlotAttention',
+    'MultiDspritesDecoder'
 ]

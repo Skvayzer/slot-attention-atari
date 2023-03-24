@@ -31,6 +31,7 @@ from pytorch_lightning import seed_everything
 
 from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader
+from datasets import MultiDSprites
 
 from random import randrange
 
@@ -132,9 +133,13 @@ transforms = torchvision.transforms.Compose([
     torchvision.transforms.Resize((128, 128)),
     torchvision.transforms.ToTensor()
 ])
-
-train_dataset = ImageFolder(root=args.train_path, transform=transforms)
-val_dataset = ImageFolder(root=args.val_path, transform=transforms)
+train_dataset, val_dataset = None, None
+if dataset=='seaquest':
+    train_dataset = ImageFolder(root=args.train_path, transform=transforms)
+    val_dataset = ImageFolder(root=args.val_path, transform=transforms)
+elif dataset=='tetrominoes':
+    train_dataset = MultiDSprites(path_to_dataset=(args.train_path + '/tetrominoes_train.npz'), mode='tetraminoes')
+    val_dataset = MultiDSprites(path_to_dataset=(args.train_path + '/tetrominoes_val.npz'), mode='tetraminoes')
 
 
 train_loader = DataLoader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True,

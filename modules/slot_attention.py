@@ -74,7 +74,7 @@ class InvariantSlotAttention(nn.Module):
 
         self.g = nn.Linear(2, enc_hidden_size)
         self.f = nn.Sequential(
-            nn.LayerNorm(enc_hidden_size),
+            # nn.LayerNorm(enc_hidden_size),
             nn.Linear(dim, hidden_dim),
             nn.ReLU(inplace = True),
             nn.Linear(hidden_dim, dim)

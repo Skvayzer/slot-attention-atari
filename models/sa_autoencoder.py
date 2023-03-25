@@ -21,7 +21,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
     def __init__(self,
                  resolution=(128, 128),
-                 num_slots=18,
+                 num_slots=15,
                  val_num_slots=20,
                  num_iters=3,
                  in_channels=3,

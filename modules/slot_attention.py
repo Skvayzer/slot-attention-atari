@@ -210,7 +210,7 @@ class InvariantSlotAttention(nn.Module):
                 # sorted_eigenvalue = eigen_values[sorted_index]
                 # # similarly sort the eigenvectors
                 # sorted_eigenvectors = eigen_vectors[:, sorted_index]
-                
+
                 # v1, v2 = wpca.fit_transform(self.abs_grid_flattened.expand(b, n_s, -1, 2) - S_p, attn)
                 # S_r = postprocess(v1, v2)
 

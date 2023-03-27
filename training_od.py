@@ -97,7 +97,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 def collate_fn(batch):
-    # print(batch, "\n\n", file=sys.stderr, flush=True)
+    print(batch, "\n\n", file=sys.stderr, flush=True)
 
     images = torch.stack([b[0] for b in batch])
 

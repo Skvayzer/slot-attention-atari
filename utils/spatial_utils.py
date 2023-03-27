@@ -35,7 +35,7 @@ class WPCA:
     def fit(self, X, sample_weight=None):
         m, n = X.shape
         W = (np.full((m, 1), 1 / m) if sample_weight is None else
-             (x / sample_weight.sum()))
+             (X / sample_weight.sum()))
         if len(W.shape) == 1:
             W = W[:, None]
 

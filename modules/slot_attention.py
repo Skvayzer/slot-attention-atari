@@ -2,10 +2,11 @@ import math
 import sys
 
 import torch
+import numpy as np
 from torch import nn
 from torch.nn import init
 from torch.nn import functional as F
-from utils import spatial_flatten, build_grid
+from utils import spatial_flatten, build_grid, WPCA, postprocess
 from modules import PosEmbeds, ISAPosEmbeds
 
 
@@ -140,14 +141,15 @@ class InvariantSlotAttention(nn.Module):
 
         # inputs = self.norm_input(inputs)
         S_p = 2 * torch.rand((b, n_s, 1, 2)).cuda() - 1
-        print(f"\n\nATTENTION! abs grid: {self.abs_grid_flattened.shape}", file=sys.stderr, flush=True)
+        S_r = (np.pi/4) * torch.tanh(torch.randn((b, n_s, 2, 2)).cuda())
+        print(f"\n\nATTENTION! abs grid: {self.abs_grid}", file=sys.stderr, flush=True)
         print(f"\n\nATTENTION! S_p: {S_p.view(b, n_s, 1, 1, 2).shape} ", file=sys.stderr, flush=True)
         print(f"\n\nATTENTION! expand abs grid: {self.abs_grid_flattened.expand(b, n_s, -1, 2).shape}", file=sys.stderr, flush=True)
 
         # rel_grid = (self.abs_grid.expand(b, n_s, -1, -1, -1) - S_p.view(b, n_s, 1, 1, 2))
         # print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
         # rel_grid = (self.abs_grid_flattened.expand(b, n_s, -1, 2) - S_p)
-
+        wpca = WPCA(n_components=2, scale=False)
         for t in range(1, self.iters + 1):
             # for s in range(n_s):
             slots_prev = slots
@@ -157,7 +159,7 @@ class InvariantSlotAttention(nn.Module):
             # Computes relative grids per slot, and associated key, value embeddings
             # [64, 20, 128, 128, 2]
             # rel_grid = (self.abs_grid.expand(b, n_s, -1, -1, -1) - S_p.view(b, n_s, 1, 1, 2))
-            rel_grid = (self.abs_grid_flattened.expand(b, n_s, -1, 2) - S_p)
+            rel_grid = torch.inverse(S_r) @ (self.abs_grid_flattened.expand(b, n_s, -1, 2) - S_p)
 
             # encoded_pos = self.encode_pos(inputs, rel_grid.cuda())
             # print(f"\n\nATTENTION! encoded pos: {encoded_pos.shape}", file=sys.stderr, flush=True)
@@ -191,7 +193,26 @@ class InvariantSlotAttention(nn.Module):
 
             # Updates Sp, Ss and slots.
             for i in range(n_s):
-                S_p[:, i, 0, :] = (attn[:, i] @ self.abs_grid_flattened)/ attn[:, i].sum(dim=-1, keepdim=True)
+                S_p[:, i, 0, :] = (attn[:, i] @ self.abs_grid_flattened) / attn[:, i].sum(dim=-1, keepdim=True)
+                # X_weighted = self.abs_grid @ attn
+                # X_meaned = X_weighted - X_weighted.mean(axis = 0)
+                # # calculating the covariance matrix of the mean-centered data.
+                # cov_mat = np.cov(X_meaned, rowvar=False)
+                # # Calculating Eigenvalues and Eigenvectors of the covariance matrix
+                # eigen_values, eigen_vectors = np.linalg.eigh(cov_mat)
+                #
+                # # sort the eigenvalues in descending order
+                # sorted_index = np.argsort(eigen_values)[::-1]
+                #
+                # sorted_eigenvalue = eigen_values[sorted_index]
+                # # similarly sort the eigenvectors
+                # sorted_eigenvectors = eigen_vectors[:, sorted_index]
+                v1, v2 = wpca.fit_transform(self.abs_grid_flattened.expand(b, n_s, -1, 2) - S_p, attn)
+                S_r = postprocess(v1, v2)
+
+
+
+
 
             print(f"\n\nATTENTION! S_p: {S_p.shape} ", file=sys.stderr, flush=True)
 

@@ -196,7 +196,7 @@ class InvariantSlotAttention(nn.Module):
 
             # Updates Sp, Ss and slots.
             for i in range(n_s):
-                S_p[:, i, 0, :] = (attn[:, i] @ self.abs_grid_flattened) / attn[:, i].sum(dim=-1, keepdim=True)
+                S_p[:, i, :] = (attn[:, i] @ self.abs_grid_flattened) / attn[:, i].sum(dim=-1, keepdim=True)
                 # X_weighted = self.abs_grid @ attn
                 # X_meaned = X_weighted - X_weighted.mean(axis = 0)
                 # # calculating the covariance matrix of the mean-centered data.

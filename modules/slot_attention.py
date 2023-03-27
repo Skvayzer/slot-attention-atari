@@ -161,7 +161,7 @@ class InvariantSlotAttention(nn.Module):
             # Computes relative grids per slot, and associated key, value embeddings
             # [64, 20, 128, 128, 2]
             # rel_grid = torch.inverse(S_r) @ (self.abs_grid_flattened.expand(b, n_s, -1, 2) - S_p)
-            rel_grid = (self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2))
+            rel_grid = torch.inverse(S_r) @ (self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2)).T
             print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
 
             # encoded_pos = self.encode_pos(inputs, rel_grid.cuda())
@@ -169,9 +169,9 @@ class InvariantSlotAttention(nn.Module):
 
             # k, v = self.to_k(encoded_pos), self.to_v(encoded_pos)
 
-            e = self.to_k(inputs).unsqueeze(dim=1)
-            r = self.g(rel_grid)
-            print(f"\n\nATTENTION! e r: {e.shape} {r.shape} ", file=sys.stderr, flush=True)
+            # e = self.to_k(inputs).unsqueeze(dim=1)
+            # r = self.g(rel_grid)
+            # print(f"\n\nATTENTION! e r: {e.shape} {r.shape} ", file=sys.stderr, flush=True)
 
             k = self.f(self.to_k(inputs).unsqueeze(dim=1) + self.g(rel_grid).view(b, n_s, -1, d))
             v = self.f(self.to_v(inputs).unsqueeze(dim=1) + self.g(rel_grid).view(b, n_s, -1, d))

@@ -94,12 +94,15 @@ args = parser.parse_args()
 resize = (128, 128)
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+dataset = args.dataset
 
 
 def collate_fn(batch):
     print(batch, "\n\n aaaaa", file=sys.stderr, flush=True)
-
-    images = torch.stack([b[0] for b in batch])
+    if dataset == 'seaquest':
+        images = torch.stack([b[0] for b in batch])
+    else:
+        images = torch.stack([b['image'] for b in batch])
 
     return {
         'image': images,
@@ -113,7 +116,6 @@ wandb.login(key='c84312b58e94070d15277f8a5d58bb72e57be7fd')
 # ------------------------------------------------------------
 # Load dataset
 # ------------------------------------------------------------
-dataset = args.dataset
 
 # ------------------------------------------------------------
 # Load model

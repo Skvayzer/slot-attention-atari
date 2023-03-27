@@ -57,7 +57,7 @@ class InvariantSlotAttention(nn.Module):
         #     nn.Linear(self.resolution[0]*self.resolution[1] * 2, dim)
         # )
 
-
+        self.enc_hidden_size = enc_hidden_size
         self.enc_emb = ISAPosEmbeds(enc_hidden_size, self.resolution)
         self.abs_grid = self.enc_emb.grid
         self.abs_grid_flattened = self.abs_grid.reshape(self.abs_grid.shape[1] * self.abs_grid.shape[2], self.abs_grid.shape[-1]).cuda()
@@ -173,8 +173,8 @@ class InvariantSlotAttention(nn.Module):
             r = self.g(rel_grid)
             print(f"\n\nATTENTION! e r: {e.shape} {r.shape} ", file=sys.stderr, flush=True)
 
-            k = self.f(self.to_k(inputs).unsqueeze(dim=1) + self.g(rel_grid))
-            v = self.f(self.to_v(inputs).unsqueeze(dim=1) + self.g(rel_grid))
+            k = self.f(self.to_k(inputs).unsqueeze(dim=1) + self.g(rel_grid).view(b, n_s, -1, d))
+            v = self.f(self.to_v(inputs).unsqueeze(dim=1) + self.g(rel_grid).view(b, n_s, -1, d))
             print(f"\n\nATTENTION! k v: {k.shape} {v.shape} ", file=sys.stderr, flush=True)
 
             # Inverted dot production attention.

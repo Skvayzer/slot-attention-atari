@@ -161,8 +161,8 @@ class InvariantSlotAttention(nn.Module):
             # Computes relative grids per slot, and associated key, value embeddings
             # [64, 20, 128, 128, 2]
             # rel_grid = torch.inverse(S_r) @ (self.abs_grid_flattened.expand(b, n_s, -1, 2) - S_p)
-            print(f"\n\nATTENTION! a?: {((self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2))).shape} ", file=sys.stderr, flush=True)
-
+            print(f"\n\nATTENTION! a?: {((self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2))).T.shape} ", file=sys.stderr, flush=True)
+            
             rel_grid = torch.inverse(S_r) @ (self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2)).T
             print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
 

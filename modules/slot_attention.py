@@ -164,7 +164,7 @@ class InvariantSlotAttention(nn.Module):
             print(f"\n\nATTENTION! a?: {((self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2))).T.shape} ", file=sys.stderr, flush=True)
             print(f"\n\nATTENTION! torch.inverse(S_r): {torch.inverse(S_r).shape} ", file=sys.stderr, flush=True)
 
-            rel_grid =  (self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2)).T
+            rel_grid =  (self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2))
             print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
 
             # encoded_pos = self.encode_pos(inputs, rel_grid.cuda())

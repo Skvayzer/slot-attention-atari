@@ -114,7 +114,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         if num_slots is None:
             num_slots = self.num_slots
 
-        slots, S_p = self.slot_attention(x, n_s=num_slots)
+        slots, S_p, S_r = self.slot_attention(x, n_s=num_slots)
         S_p = S_p.unsqueeze(dim=2)
         print(f"\n\nATTENTION! before dec S_p: {S_p.shape} ", file=sys.stderr, flush=True)
 
@@ -123,7 +123,8 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         grid = self.dec_emb.grid.unsqueeze(dim=0).view(1, 1, -1, 2)
         print(f"\n\nATTENTION! before dec pos emb: {grid.shape} ", file=sys.stderr, flush=True)
 
-        rel_grid = grid - S_p
+        # rel_grid = grid - S_p
+        rel_grid = torch.einsum('bskd,bsijd->bsijk', torch.inverse(S_r), grid - S_p)
         print(f"\n\nATTENTION! before dec: {x.shape} ", file=sys.stderr, flush=True)
         print(f"\n\nATTENTION! self.h(rel_grid): {self.h(rel_grid).reshape(-1, self.hidden_size, *self.decoder_initial_size).shape} ", file=sys.stderr, flush=True)
 

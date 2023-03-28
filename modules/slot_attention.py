@@ -214,8 +214,8 @@ class InvariantSlotAttention(nn.Module):
                 # # similarly sort the eigenvectors
                 # sorted_eigenvectors = eigen_vectors[:, sorted_index]
 
-                # v1, v2 = wpca.fit_transform(self.abs_grid_flattened.expand(b, n_s, -1, 2) - S_p, attn)
-                # S_r = postprocess(v1, v2)
+                v1, v2 = wpca.fit_transform(self.abs_grid_flattened.expand(b, n_s, -1, 2) - S_p, attn)
+                S_r = postprocess(v1, v2)
 
 
 
@@ -236,7 +236,7 @@ class InvariantSlotAttention(nn.Module):
                 slots = slots.reshape(b, -1, d)
                 slots = slots + self.mlp(self.norm_pre_ff(slots))
 
-        return slots, S_p
+        return slots, S_p, S_r
 
 
 class SlotAttentionBase(nn.Module):

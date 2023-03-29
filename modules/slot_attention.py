@@ -213,9 +213,14 @@ class InvariantSlotAttention(nn.Module):
                 # sorted_eigenvalue = eigen_values[sorted_index]
                 # # similarly sort the eigenvectors
                 # sorted_eigenvectors = eigen_vectors[:, sorted_index]
+                attn_rect = attn.view(b, n_s, *self.resolution)
+                centered_grid = self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2)
+                for batch in range(b):
+                    for slot in range(n_s):
+                        v1, v2 = wpca.fit_transform(centered_grid[batch, slot, :, :], attn[batch, slot, :, :])
+                        print(f"\n\nATTENTION! S_p: {v1.shape} {v2.shape} ", file=sys.stderr, flush=True)
 
-                v1, v2 = wpca.fit_transform(self.abs_grid_flattened.expand(b, n_s, -1, 2) - S_p, attn)
-                S_r = postprocess(v1, v2)
+                        S_r[batch, slot] = postprocess(v1, v2)
 
 
 

@@ -220,6 +220,7 @@ class InvariantSlotAttention(nn.Module):
 
                         sorted_eigenvalue = eigen_values[sorted_index]
                         # similarly sort the eigenvectors
+                        print(f"\n\nATTENTION! eigen vectors: {eigen_vectors[:, sorted_index]} ", file=sys.stderr, flush=True)
                         v1, v2 = eigen_vectors[:, sorted_index]
 
                         # v1, v2 = wpca.fit_transform(centered_grid[batch, slot, :, :], attn_rect[batch, slot, :, :])

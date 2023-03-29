@@ -205,21 +205,24 @@ class InvariantSlotAttention(nn.Module):
             for i in range(n_s):
                 S_p[:, i, :] = (attn[:, i] @ self.abs_grid_flattened) / attn[:, i].sum(dim=-1, keepdim=True)
                 # X_weighted = self.abs_grid @ attn
-                # X_meaned = X_weighted - X_weighted.mean(axis = 0)
-                # # calculating the covariance matrix of the mean-centered data.
-                # cov_mat = np.cov(X_meaned, rowvar=False)
-                # # Calculating Eigenvalues and Eigenvectors of the covariance matrix
-                # eigen_values, eigen_vectors = np.linalg.eigh(cov_mat)
-                #
-                # # sort the eigenvalues in descending order
-                # sorted_index = np.argsort(eigen_values)[::-1]
-                #
-                # sorted_eigenvalue = eigen_values[sorted_index]
-                # # similarly sort the eigenvectors
-                # sorted_eigenvectors = eigen_vectors[:, sorted_index]
+
                 for batch in range(b):
                     for slot in range(n_s):
-                        v1, v2 = wpca.fit_transform(centered_grid[batch, slot, :, :], attn_rect[batch, slot, :, :])
+                        X = attn_rect[batch, slot, :, :]
+                        X = X - X.mean(axis=0)
+                        # calculating the covariance matrix of the mean-centered data.
+                        cov_mat = np.cov(X, rowvar=False)
+                        # Calculating Eigenvalues and Eigenvectors of the covariance matrix
+                        eigen_values, eigen_vectors = np.linalg.eigh(cov_mat)
+
+                        # sort the eigenvalues in descending order
+                        sorted_index = np.argsort(eigen_values)[::-1]
+
+                        sorted_eigenvalue = eigen_values[sorted_index]
+                        # similarly sort the eigenvectors
+                        v1, v2 = eigen_vectors[:, sorted_index]
+
+                        # v1, v2 = wpca.fit_transform(centered_grid[batch, slot, :, :], attn_rect[batch, slot, :, :])
                         print(f"\n\nATTENTION! v1 v2: {v1.shape} {v2.shape} ", file=sys.stderr, flush=True)
 
                         S_r[batch, slot] = postprocess(v1, v2)

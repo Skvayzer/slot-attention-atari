@@ -209,22 +209,22 @@ class InvariantSlotAttention(nn.Module):
 
                 for batch in range(b):
                     for slot in range(n_s):
-                        # X = attn_rect[batch, slot, :, :].cpu()
-                        # X = X - X.mean(axis=0)
-                        # # calculating the covariance matrix of the mean-centered data.
-                        # cov_mat = np.cov(X, rowvar=False)
-                        # # Calculating Eigenvalues and Eigenvectors of the covariance matrix
-                        # eigen_values, eigen_vectors = np.linalg.eigh(cov_mat)
-                        #
-                        # # sort the eigenvalues in descending order
-                        # sorted_index = np.argsort(eigen_values)[::-1]
-                        #
-                        # sorted_eigenvalue = eigen_values[sorted_index]
-                        # # similarly sort the eigenvectors
-                        # print(f"\n\nATTENTION! eigen vectors: {eigen_vectors[:, sorted_index].shape} ", file=sys.stderr, flush=True)
-                        # v1, v2 = eigen_vectors[:, sorted_index]
+                        X = centered_grid[batch, slot, :, :] * attn_expanded[batch, slot, :, :]
+                        X = X - X.mean(axis=0)
+                        # calculating the covariance matrix of the mean-centered data.
+                        cov_mat = np.cov(X, rowvar=False)
+                        # Calculating Eigenvalues and Eigenvectors of the covariance matrix
+                        eigen_values, eigen_vectors = np.linalg.eigh(cov_mat)
 
-                        v1, v2 = wpca.fit_transform(centered_grid[batch, slot, :, :], attn_expanded[batch, slot, :])
+                        # sort the eigenvalues in descending order
+                        sorted_index = np.argsort(eigen_values)[::-1]
+
+                        sorted_eigenvalue = eigen_values[sorted_index]
+                        # similarly sort the eigenvectors
+                        print(f"\n\nATTENTION! eigen vectors: {eigen_vectors[:, sorted_index].shape} ", file=sys.stderr, flush=True)
+                        v1, v2 = eigen_vectors[:, sorted_index]
+
+                        # v1, v2 = wpca.fit_transform(centered_grid[batch, slot, :, :], attn_expanded[batch, slot, :])
                         print(f"\n\nATTENTION! v1 v2: {v1.shape} {v2.shape} ", file=sys.stderr, flush=True)
 
                         S_r[batch, slot] = postprocess(v1, v2)

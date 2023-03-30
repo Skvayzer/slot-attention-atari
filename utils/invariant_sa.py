@@ -12,7 +12,7 @@ def postprocess(v1, v2):
         v1, v2 = v2, v1
         R = torch.concat((v1, v2), dim=0)
 
-    angle = np.arccos(R[0, 0])
+    angle = torch.arccos(R[0, 0])
     if angle > np.pi/4:
         return rot(np.pi/4)
     if angle < 0:

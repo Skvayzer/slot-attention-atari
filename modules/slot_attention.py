@@ -217,7 +217,7 @@ class InvariantSlotAttention(nn.Module):
                         eigen_values, eigen_vectors = torch.linalg.eigh(cov_mat)
 
                         # sort the eigenvalues in descending order
-                        sorted_index = torch.argsort(eigen_values)[::-1]
+                        sorted_index = torch.argsort(eigen_values, descending=True)
 
                         sorted_eigenvalue = eigen_values[sorted_index]
                         # similarly sort the eigenvectors

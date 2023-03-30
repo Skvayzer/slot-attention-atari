@@ -126,7 +126,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         print(f"\n\nATTENTION! S_r: {S_r.shape} ", file=sys.stderr, flush=True)
 
         rel_grid = grid - S_p
-        rel_grid_final = torch.zeros(rel_grid.shape)
+        rel_grid_final = torch.zeros(rel_grid.shape).cuda()
         # rel_grid = torch.einsum('bskd,bsijd->bsijk', torch.inverse(S_r), grid - S_p)
         for b in range(S_p.shape[0]):
             for s in range(num_slots):

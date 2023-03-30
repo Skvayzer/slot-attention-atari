@@ -199,8 +199,9 @@ class InvariantSlotAttention(nn.Module):
 
             # attn_rect = attn.view(b, n_s, *self.resolution)
             centered_grid = (self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2)).view(b, n_s, -1, 2)
-            print(f"\n\nATTENTION! centered grid | att_rect: {centered_grid.shape} {attn.shape} ", file=sys.stderr, flush=True)
+            attn_expanded = attn.unsqueeze(dim=-1).expand(*attn.shape, 2)
 
+            print(f"\n\nATTENTION! centered grid | att_rect: {centered_grid.shape} {attn_expanded.shape} ", file=sys.stderr, flush=True)
             # Updates Sp, Ss and slots.
             for i in range(n_s):
                 S_p[:, i, :] = (attn[:, i] @ self.abs_grid_flattened) / attn[:, i].sum(dim=-1, keepdim=True)
@@ -223,7 +224,7 @@ class InvariantSlotAttention(nn.Module):
                         # print(f"\n\nATTENTION! eigen vectors: {eigen_vectors[:, sorted_index].shape} ", file=sys.stderr, flush=True)
                         # v1, v2 = eigen_vectors[:, sorted_index]
 
-                        v1, v2 = wpca.fit_transform(centered_grid[batch, slot, :, :], attn[batch, slot, :].expand(*attn.shape, 2))
+                        v1, v2 = wpca.fit_transform(centered_grid[batch, slot, :, :], attn_expanded[batch, slot, :])
                         print(f"\n\nATTENTION! v1 v2: {v1.shape} {v2.shape} ", file=sys.stderr, flush=True)
 
                         S_r[batch, slot] = postprocess(v1, v2)

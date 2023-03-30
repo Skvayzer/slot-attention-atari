@@ -95,7 +95,7 @@ resize = (128, 128)
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 dataset = args.dataset
-
+torch.autograd.set_detect_anomaly(True)
 
 def collate_fn(batch):
     print(batch, "\n\n aaaaa", file=sys.stderr, flush=True)

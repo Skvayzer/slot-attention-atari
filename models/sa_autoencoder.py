@@ -126,15 +126,16 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         print(f"\n\nATTENTION! S_r: {S_r.shape} ", file=sys.stderr, flush=True)
 
         rel_grid = grid - S_p
+        rel_grid_final = torch.zeros(rel_grid.shape)
         # rel_grid = torch.einsum('bskd,bsijd->bsijk', torch.inverse(S_r), grid - S_p)
         for b in range(S_p.shape[0]):
             for s in range(num_slots):
                 S_r_inverse = torch.inverse(S_r[b, s, :, :])
-                rel_grid[b, s, :, :] = (S_r_inverse @ rel_grid[b, s, :, :].T).T
+                rel_grid_final[b, s, :, :] = (S_r_inverse @ rel_grid[b, s, :, :].T).T
         print(f"\n\nATTENTION! before dec: {x.shape} ", file=sys.stderr, flush=True)
-        print(f"\n\nATTENTION! self.h(rel_grid): {self.h(rel_grid).reshape(-1, self.hidden_size, *self.decoder_initial_size).shape} ", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! self.h(rel_grid): {self.h(rel_grid_final).reshape(-1, self.hidden_size, *self.decoder_initial_size).shape} ", file=sys.stderr, flush=True)
 
-        x = self.decoder(x + self.h(rel_grid).reshape(-1, self.hidden_size, *self.decoder_initial_size))
+        x = self.decoder(x + self.h(rel_grid_final).reshape(-1, self.hidden_size, *self.decoder_initial_size))
 
         x = x.reshape(inputs.shape[0], num_slots, *x.shape[1:])
         recons, masks = torch.split(x, self.in_channels, dim=2)

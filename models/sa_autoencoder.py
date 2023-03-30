@@ -122,6 +122,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         # _, pos_emb = self.dec_emb(x)
         grid = self.dec_emb.grid.unsqueeze(dim=0).view(1, 1, -1, 2)
         print(f"\n\nATTENTION! before dec pos emb: {grid.shape} ", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! before dec pos emb: {S_r.shape} ", file=sys.stderr, flush=True)
 
         # rel_grid = grid - S_p
         rel_grid = torch.einsum('bskd,bsijd->bsijk', torch.inverse(S_r), grid - S_p)

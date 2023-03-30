@@ -212,7 +212,7 @@ class InvariantSlotAttention(nn.Module):
                         X = (centered_grid[batch, slot, :, :] * attn_expanded[batch, slot, :, :]).cpu()
                         X = X - X.mean(axis=0)
                         # calculating the covariance matrix of the mean-centered data.
-                        cov_mat = torch.cov(X, rowvar=False)
+                        cov_mat = torch.cov(X)
                         # Calculating Eigenvalues and Eigenvectors of the covariance matrix
                         eigen_values, eigen_vectors = torch.linalg.eigh(cov_mat)
 

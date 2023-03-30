@@ -209,7 +209,7 @@ class InvariantSlotAttention(nn.Module):
 
                 for batch in range(b):
                     for slot in range(n_s):
-                        X = centered_grid[batch, slot, :, :] * attn_expanded[batch, slot, :, :]
+                        X = (centered_grid[batch, slot, :, :] * attn_expanded[batch, slot, :, :]).cpu()
                         X = X - X.mean(axis=0)
                         # calculating the covariance matrix of the mean-centered data.
                         cov_mat = np.cov(X, rowvar=False)

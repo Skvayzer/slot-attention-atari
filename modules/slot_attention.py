@@ -232,7 +232,7 @@ class InvariantSlotAttention(nn.Module):
 
                         S_r[batch, slot] = postprocess(v1, v2)
 
-
+                return 
 
 
 

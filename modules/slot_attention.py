@@ -206,14 +206,15 @@ class InvariantSlotAttention(nn.Module):
             for i in range(n_s):
                 S_p[:, i, :] = (attn[:, i] @ self.abs_grid_flattened) / attn[:, i].sum(dim=-1, keepdim=True)
                 # X_weighted = self.abs_grid @ attn
+                X = (centered_grid[:, i, :, :] * attn_expanded[:, i, :, :])
+                print(f"\n\nATTENTION! X: {X.shape} ",
+                      file=sys.stderr, flush=True)
+                X = X - X.mean(axis=0)
 
                 for batch in range(b):
                     for slot in range(n_s):
-                        X = (centered_grid[batch, slot, :, :] * attn_expanded[batch, slot, :, :]) + self.eps #.cpu()
-                        print(f"\n\nATTENTION! X: {X.shape} ",
-                              file=sys.stderr, flush=True)
 
-                        X = X - X.mean(axis=0)
+
                         # calculating the covariance matrix of the mean-centered data.
                         cov_mat = torch.cov(X.T)
                         # Calculating Eigenvalues and Eigenvectors of the covariance matrix

@@ -210,6 +210,9 @@ class InvariantSlotAttention(nn.Module):
                 for batch in range(b):
                     for slot in range(n_s):
                         X = (centered_grid[batch, slot, :, :] * attn_expanded[batch, slot, :, :]) + self.eps #.cpu()
+                        print(f"\n\nATTENTION! X: {X.shape} ",
+                              file=sys.stderr, flush=True)
+
                         X = X - X.mean(axis=0)
                         # calculating the covariance matrix of the mean-centered data.
                         cov_mat = torch.cov(X.T)

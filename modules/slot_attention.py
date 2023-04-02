@@ -211,31 +211,22 @@ class InvariantSlotAttention(nn.Module):
                 print(f"\n\nATTENTION! X.mean(axis=1): {X.mean(axis=1).shape} ", file=sys.stderr, flush=True)
                 print(f"\n\nATTENTION! X.mean(axis=0): {X.mean(axis=0).shape} ", file=sys.stderr, flush=True)
 
-                X = X - X.mean(axis=0)
-                torch.vmap(X)
-                for batch in range(b):
-                    for slot in range(n_s):
+                X = X - X.mean(axis=1).unsqueeze(dim=1)
 
 
-                        # calculating the covariance matrix of the mean-centered data.
-                        cov_mat = torch.cov(X.T)
-                        # Calculating Eigenvalues and Eigenvectors of the covariance matrix
-                        eigen_values, eigen_vectors = torch.linalg.eigh(cov_mat)
+                # Compute the SVD of the standardized data matrix
+                U, S, Vt = np.linalg.svd(X)
 
-                        # sort the eigenvalues in descending order
-                        sorted_index = torch.argsort(eigen_values, descending=True)
+                # similarly sort the eigenvectors
+                print(f"\n\nATTENTION! eigen vectors: {U.shape} ", file=sys.stderr, flush=True)
+                v1, v2 = U
 
-                        sorted_eigenvalue = eigen_values[sorted_index]
-                        # similarly sort the eigenvectors
-                        print(f"\n\nATTENTION! eigen vectors: {eigen_vectors[:, sorted_index].shape} ", file=sys.stderr, flush=True)
-                        v1, v2 = eigen_vectors[:, sorted_index]
+                # v1, v2 = wpca.fit_transform(centered_grid[batch, slot, :, :], attn_expanded[batch, slot, :])
+                print(f"\n\nATTENTION! v1 v2: {v1.shape} {v2.shape} ", file=sys.stderr, flush=True)
 
-                        # v1, v2 = wpca.fit_transform(centered_grid[batch, slot, :, :], attn_expanded[batch, slot, :])
-                        print(f"\n\nATTENTION! v1 v2: {v1.shape} {v2.shape} ", file=sys.stderr, flush=True)
+                S_r[:, :] = postprocess(v1, v2)
 
-                        S_r[batch, slot] = postprocess(v1, v2)
-
-                        return
+                return
 
 
 

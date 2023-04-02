@@ -209,7 +209,8 @@ class InvariantSlotAttention(nn.Module):
                 X = (centered_grid[:, i, :, :] * attn_expanded[:, i, :, :])
                 print(f"\n\nATTENTION! X.mean(axis=1): {X.mean(axis=1).shape} ", file=sys.stderr, flush=True)
 
-                X = X - X.mean(axis=1).unsqueeze(dim=1) + self.eps
+                X = X - X.mean(axis=1).unsqueeze(dim=1)
+                X += torch.randn(X.shape)
 
                 print(f"\n\nATTENTION! X: {X.shape} {X.T.shape}", file=sys.stderr, flush=True)
                 print(f"\n\nATTENTION! X. swap: {torch.swapaxes(X, 1, 2).shape} ", file=sys.stderr, flush=True)

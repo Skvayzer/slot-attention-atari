@@ -209,8 +209,8 @@ class InvariantSlotAttention(nn.Module):
                 X = (centered_grid[:, i, :, :] * attn_expanded[:, i, :, :])
                 print(f"\n\nATTENTION! X: {X.shape} ",
                       file=sys.stderr, flush=True)
-                X = X - X.mean(axis=0)
-
+                X = X - X.mean(axis=1)
+                torch.vmap(X)
                 for batch in range(b):
                     for slot in range(n_s):
 

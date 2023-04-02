@@ -128,13 +128,14 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         rel_grid = grid - S_p
         print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
 
-        rel_grid_final = torch.zeros(rel_grid.shape).cuda()
+        # rel_grid_final = torch.zeros(rel_grid.shape).cuda()
         # rel_grid = torch.einsum('bskd,bsijd->bsijk', torch.inverse(S_r), grid - S_p)
         S_r_inverse = torch.inverse(S_r)
         print(f"\n\nATTENTION! S_r_inv: {S_r_inverse.shape} ", file=sys.stderr, flush=True)
-        for b in range(S_p.shape[0]):
-            for s in range(num_slots):
-                rel_grid_final[b, s, :, :] = (S_r_inverse[b, s, :, :] @ rel_grid[b, s, :, :].T).T
+        rel_grid_final = torch.einsum("bsij,bsjk->bsik", S_r_inverse, rel_grid)
+        # for b in range(S_p.shape[0]):
+        #     for s in range(num_slots):
+        #         rel_grid_final[b, s, :, :] = (S_r_inverse[b, s, :, :] @ rel_grid[b, s, :, :].T).T
         print(f"\n\nATTENTION! before dec: {x.shape} ", file=sys.stderr, flush=True)
         print(f"\n\nATTENTION! self.h(rel_grid): {self.h(rel_grid_final).reshape(-1, self.hidden_size, *self.decoder_initial_size).shape} ", file=sys.stderr, flush=True)
         return

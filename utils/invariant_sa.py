@@ -12,6 +12,7 @@ def postprocess(v1, v2):
     print(f"\n\nATTENTION! R: {R.shape} ", file=sys.stderr, flush=True)
 
     det = torch.linalg.det(R)
+    # for det in dets:
     if det < 0:
         v1, v2 = v2, v1
         R = torch.stack((v1, v2), dim=0)

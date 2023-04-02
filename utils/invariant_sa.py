@@ -8,7 +8,7 @@ def rot(angle):
     return torch.tensor([[cos(angle), -sin(angle)],
                          [sin(angle), cos(angle)]])
 def postprocess(v1, v2):
-    R = torch.stack((v1, v2), dim=0)
+    R = torch.stack((v1, v2), dim=1)
     print(f"\n\nATTENTION! R: {R.shape} ", file=sys.stderr, flush=True)
 
     det = torch.linalg.det(R)

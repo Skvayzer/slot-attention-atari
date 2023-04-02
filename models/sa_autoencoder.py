@@ -21,8 +21,8 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
     def __init__(self,
                  resolution=(128, 128),
-                 num_slots=15,
-                 val_num_slots=20,
+                 num_slots=10,
+                 val_num_slots=15,
                  num_iters=3,
                  in_channels=3,
                  slot_size=32,
@@ -138,7 +138,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         #         rel_grid_final[b, s, :, :] = (S_r_inverse[b, s, :, :] @ rel_grid[b, s, :, :].T).T
         print(f"\n\nATTENTION! before dec: {x.shape} ", file=sys.stderr, flush=True)
         print(f"\n\nATTENTION! self.h(rel_grid): {self.h(rel_grid_final).reshape(-1, self.hidden_size, *self.decoder_initial_size).shape} ", file=sys.stderr, flush=True)
-        
+
         x = self.decoder(x + self.h(rel_grid_final).reshape(-1, self.hidden_size, *self.decoder_initial_size))
 
         x = x.reshape(inputs.shape[0], num_slots, *x.shape[1:])

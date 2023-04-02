@@ -225,7 +225,7 @@ class InvariantSlotAttention(nn.Module):
                 print(f"\n\nATTENTION! v1 v2: {v1.shape} {v2.shape} ", file=sys.stderr, flush=True)
 
                 # S_r[:, :] = postprocess(v1, v2)
-                S_r = U
+                S_r[:, i, :, :] = U
 
 
 

@@ -13,14 +13,18 @@ def postprocess(v1, v2):
 
     det = torch.linalg.det(R)
     # for det in dets:
-    if det < 0:
-        v1, v2 = v2, v1
-        R = torch.stack((v1, v2), dim=0)
-    angle = torch.arccos(R[0, 0])
-    if angle > np.pi/4:
-        return rot(np.pi/4)
-    if angle < 0:
-        return torch.eye(2)
+    idx = det < 0
+    R[idx] = torch.stack((v1[idx], v2[idx]), dim=0)
+    # if det < 0:
+    #     v1, v2 = v2, v1
+    #     R =
+    angle = torch.arccos(R[:, 0, 0])
+    R[angle > np.pi/4] = rot(np.pi/4)
+    R[angle < 0] = torch.eye(2)
+    # if angle > np.pi/4:
+    #     return rot(np.pi/4)
+    # if angle < 0:
+    #     return torch.eye(2)
     return R
 
 

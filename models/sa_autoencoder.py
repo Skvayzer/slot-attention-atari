@@ -257,7 +257,7 @@ class SlotAttentionAE(pl.LightningModule):
                  val_num_slots=20,
                  num_iters=3,
                  in_channels=3,
-                 slot_size=32,
+                 slot_size=64,
                  hidden_size=32,
                  dataset='',
                  task='',

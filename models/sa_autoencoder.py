@@ -343,6 +343,7 @@ class SlotAttentionAE(pl.LightningModule):
             num_slots = self.num_slots
 
         slots = self.slot_attention(x, n_s=num_slots)
+        print(f"\n\nATTENTION! slots {slots.shape} ", file=sys.stderr, flush=True)
 
         x = spatial_broadcast(slots, self.decoder_initial_size)
         x = self.dec_emb(x)

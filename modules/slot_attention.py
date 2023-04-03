@@ -121,7 +121,7 @@ class InvariantSlotAttention(nn.Module):
         b, n, d, device = *inputs.shape, inputs.device
 
 
-        print(f"\n\nATTENTION! ns: {n_s} ", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! ns d: {n_s} {d}", file=sys.stderr, flush=True)
 
 
         mu = self.slots_mu.expand(b, n_s, -1)
@@ -151,7 +151,7 @@ class InvariantSlotAttention(nn.Module):
         # rel_grid = (self.abs_grid.expand(b, n_s, -1, -1, -1) - S_p.view(b, n_s, 1, 1, 2))
         # print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
         # rel_grid = (self.abs_grid_flattened.expand(b, n_s, -1, 2) - S_p)
-        wpca = WPCA(n_components=2, scale=False)
+        # wpca = WPCA(n_components=2, scale=False)
         for t in range(1, self.iters + 1):
             # for s in range(n_s):
             slots_prev = slots

@@ -37,7 +37,7 @@ from random import randrange
 
 # import gym
 # from ale_py.roms import Seaquest
-# 
+#
 # from ale_py import ALEInterface
 # ale = ALEInterface()
 # ale.loadROM(Seaquest)

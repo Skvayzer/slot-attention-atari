@@ -6,7 +6,7 @@ from math import cos, sin
 
 def rot(angle):
     return torch.tensor([[cos(angle), -sin(angle)],
-                         [sin(angle), cos(angle)]])
+                         [sin(angle), cos(angle)]]).cuda()
 def postprocess(v1, v2):
     R = torch.stack((v1, v2), dim=1)
     print(f"\n\nATTENTION! R: {R.shape} ", file=sys.stderr, flush=True)
@@ -15,7 +15,7 @@ def postprocess(v1, v2):
     # for det in dets:
     idx = det < 0
     print(f"\n\nATTENTION! R[idx] : {R[idx].shape} ", file=sys.stderr, flush=True)
-    print(f"\n\nATTENTION! torch.stack((v1[idx], v2[idx]), dim=0): {torch.stack((v1[idx], v2[idx]), dim=0).shape} ", file=sys.stderr, flush=True)
+    print(f"\n\nATTENTION! torch.stack((v1[idx], v2[idx]), dim=0): {torch.stack((v1[idx], v2[idx]), dim=1).shape} ", file=sys.stderr, flush=True)
 
     R[idx] = torch.stack((v1[idx], v2[idx]), dim=1)
     # if det < 0:
@@ -23,7 +23,7 @@ def postprocess(v1, v2):
     #     R =
     angle = torch.arccos(R[:, 0, 0])
     R[angle > np.pi/4] = rot(np.pi/4)
-    R[angle < 0] = torch.eye(2)
+    R[angle < 0] = torch.eye(2).cuda()
     # if angle > np.pi/4:
     #     return rot(np.pi/4)
     # if angle < 0:

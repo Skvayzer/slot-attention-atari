@@ -307,7 +307,7 @@ class SlotAttentionAE(pl.LightningModule):
         self.mlp = nn.Sequential(
             nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
-            nn.Linear(hidden_size, slot_size)
+            nn.Linear(hidden_size, hidden_size)
         )
 
         if invariance:
@@ -328,7 +328,7 @@ class SlotAttentionAE(pl.LightningModule):
 
         if not self.invariance:
             x = self.enc_emb(x)
-            print(f"\n\nATTENTION! x {x[0].shape} {x[1]} ", file=sys.stderr, flush=True)
+            print(f"\n\nATTENTION! x {x[0].shape} {x[1].shape} ", file=sys.stderr, flush=True)
             x = spatial_flatten(x[0])
             print(f"\n\nATTENTION! x {x.shape} ", file=sys.stderr, flush=True)
 

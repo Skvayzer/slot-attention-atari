@@ -142,7 +142,7 @@ class InvariantSlotAttention(nn.Module):
         # inputs = self.norm_input(inputs)
         # S_p = 2 * torch.rand((b, n_s, 1, 2)).cuda() - 1
         S_p = 2 * torch.rand((b, n_s, 2)).cuda() - 1
-
+        # S_s = 1e-2 * torch.randn((b, n_s, 2)).cuda() + 1e-1
         S_r = (np.pi/4) * torch.tanh(torch.randn((b, n_s, 2, 2)).cuda())
         print(f"\n\nATTENTION! abs grid: {self.abs_grid} {self.abs_grid.shape}", file=sys.stderr, flush=True)
         print(f"\n\nATTENTION! S_p: {S_p.view(b, n_s, 1, 1, 2).shape} ", file=sys.stderr, flush=True)

@@ -290,7 +290,15 @@ class SlotAttentionAE(pl.LightningModule):
         self.decoder_initial_size = (8, 8)
 
         # Decoder
-        self.decoder = Decoder(num_channels=hidden_size)
+        if dataset == 'seaquest':
+            self.decoder_initial_size = (8, 8)
+            self.decoder = Decoder(num_channels=hidden_size)
+        else:
+            self.decoder_initial_size = self.resolution
+            self.decoder = MultiDspritesDecoder(in_channels=self.slot_size,
+                                                hidden_channels=self.hidden_size,
+                                                out_channels=4,
+                                                mode=dataset)
 
         self.enc_emb = PosEmbeds(hidden_size, self.resolution)
         self.dec_emb = PosEmbeds(hidden_size, self.decoder_initial_size)

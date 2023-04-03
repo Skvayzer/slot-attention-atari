@@ -307,7 +307,7 @@ class SlotAttentionAE(pl.LightningModule):
         self.mlp = nn.Sequential(
             nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
-            nn.Linear(hidden_size, hidden_size)
+            nn.Linear(hidden_size, slot_size)
         )
 
         if invariance:

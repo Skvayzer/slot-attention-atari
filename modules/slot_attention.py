@@ -216,7 +216,7 @@ class InvariantSlotAttention(nn.Module):
                 print(f"\n\nATTENTION! X. swap: {torch.swapaxes(X, 1, 2).shape} ", file=sys.stderr, flush=True)
 
                 # Compute the SVD of the standardized data matrix
-                U, S, Vt = torch.linalg.svd(torch.swapaxes(X, 1, 2))
+                U, _, _ = torch.linalg.svd(torch.swapaxes(X, 1, 2))
 
                 # similarly sort the eigenvectors
                 print(f"\n\nATTENTION! eigen vectors: {U.shape} ", file=sys.stderr, flush=True)

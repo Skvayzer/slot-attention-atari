@@ -224,7 +224,7 @@ class InvariantSlotAttention(nn.Module):
                 v1, v2 = U[:, 0, :], U[:, 1, :]
 
                 # v1, v2 = wpca.fit_transform(centered_grid[batch, slot, :, :], attn_expanded[batch, slot, :])
-                print(f"\n\nATTENTION! v1 v2: {v1.shape} {v2.shape} ", file=sys.stderr, flush=True)
+                print(f"\n\nATTENTION! v1 v2 U: {v1.shape} {v2.shape} {U.shape}", file=sys.stderr, flush=True)
 
                 # S_r[:, :] = postprocess(v1, v2)
                 S_r[:, i, :, :] = U

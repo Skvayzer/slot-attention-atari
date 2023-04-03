@@ -261,7 +261,7 @@ class SlotAttentionAE(pl.LightningModule):
                  hidden_size=32,
                  dataset='',
                  task='',
-                 invariance=True,
+                 invariance=False,
                  beta=0.01,
                  lr=4e-4,
                  num_steps=int(3e5),

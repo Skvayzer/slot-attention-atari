@@ -324,19 +324,19 @@ class SlotAttentionAE(pl.LightningModule):
 
     def forward(self, inputs, num_slots=None, test=False):
         x = self.encoder(inputs)
-        # print(f"\n\nATTENTION! encoded {encoded.shape} ", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! encoded {x.shape} ", file=sys.stderr, flush=True)
 
         if not self.invariance:
             x = self.enc_emb(x)
-            # print(f"\n\nATTENTION! x {x[0].shape} {x[1]} ", file=sys.stderr, flush=True)
+            print(f"\n\nATTENTION! x {x[0].shape} {x[1]} ", file=sys.stderr, flush=True)
             x = spatial_flatten(x[0])
-            # print(f"\n\nATTENTION! x {x.shape} ", file=sys.stderr, flush=True)
+            print(f"\n\nATTENTION! x {x.shape} ", file=sys.stderr, flush=True)
 
             x = self.layer_norm(x)
-            # print(f"\n\nATTENTION! x {x.shape} ", file=sys.stderr, flush=True)
+            print(f"\n\nATTENTION! x {x.shape} ", file=sys.stderr, flush=True)
 
             x = self.mlp(x)
-            # print(f"\n\nATTENTION! x {x.shape} ", file=sys.stderr, flush=True)
+            print(f"\n\nATTENTION! x {x.shape} ", file=sys.stderr, flush=True)
 
         # print(f"\n\nATTENTION! num slots: {num_slots} ", file=sys.stderr, flush=True)
         if num_slots is None:

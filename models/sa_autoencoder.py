@@ -59,7 +59,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         # Decoder
         if dataset=='seaquest':
             self.decoder_initial_size = (8, 8)
-            self.decoder = Decoder(num_channels=hidden_size)
+            self.decoder = Decoder(num_channels=slot_size)
         else:
             self.decoder_initial_size = self.resolution
             self.decoder = MultiDspritesDecoder(in_channels=self.slot_size,
@@ -69,7 +69,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
         # self.enc_emb = ISAPosEmbeds(hidden_size, self.resolution)
         self.dec_emb = ISAPosEmbeds(hidden_size, self.decoder_initial_size)
-        self.h = nn.Linear(2, hidden_size)
+        self.h = nn.Linear(2, slot_size)
 
         self.layer_norm = nn.LayerNorm(hidden_size)
         self.mlp = nn.Sequential(

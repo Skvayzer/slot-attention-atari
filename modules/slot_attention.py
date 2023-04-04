@@ -78,7 +78,7 @@ class InvariantSlotAttention(nn.Module):
             # nn.LayerNorm(enc_hidden_size),
             nn.Linear(dim, hidden_dim),
             nn.ReLU(inplace = True),
-            nn.Linear(hidden_dim, hidden_dim)
+            nn.Linear(hidden_dim, dim)
         )
 
         self.gru = nn.GRUCell(dim, dim)

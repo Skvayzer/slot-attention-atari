@@ -282,10 +282,16 @@ class SlotAttentionAE(pl.LightningModule):
         self.train_dataloader = train_dataloader
 
         # Encoder
+        # self.encoder = nn.Sequential(
+        #     nn.Conv2d(in_channels, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU(),
+        #     *[nn.Sequential(nn.Conv2d(hidden_size, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU()) for _ in
+        #       range(3)]
+        # )
         self.encoder = nn.Sequential(
             nn.Conv2d(in_channels, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU(),
             *[nn.Sequential(nn.Conv2d(hidden_size, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU()) for _ in
-              range(3)]
+              range(2)],
+            nn.Sequential(nn.Conv2d(hidden_size, slot_size, kernel_size=5, padding=(2, 2)), nn.ReLU())
         )
         self.decoder_initial_size = (8, 8)
 

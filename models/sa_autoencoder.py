@@ -303,9 +303,9 @@ class SlotAttentionAE(pl.LightningModule):
         self.enc_emb = PosEmbeds(hidden_size, self.resolution)
         self.dec_emb = PosEmbeds(slot_size, self.decoder_initial_size)
 
-        self.layer_norm = nn.LayerNorm(hidden_size)
+        self.layer_norm = nn.LayerNorm(slot_size)
         self.mlp = nn.Sequential(
-            nn.Linear(hidden_size, hidden_size),
+            nn.Linear(slot_size, hidden_size),
             nn.ReLU(),
             nn.Linear(hidden_size, slot_size)
         )

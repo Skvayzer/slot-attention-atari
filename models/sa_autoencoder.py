@@ -382,7 +382,7 @@ class SlotAttentionAE(pl.LightningModule):
 
         loss = F.mse_loss(result, imgs)
         # print(f"\n\nATTENTION! loss {loss} ", file=sys.stderr, flush=True)
-        
+
         return loss, iou_loss
 
     def training_step(self, batch, batch_idx):

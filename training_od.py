@@ -98,7 +98,7 @@ dataset = args.dataset
 torch.autograd.set_detect_anomaly(True)
 
 def collate_fn(batch):
-    print(batch, "\n\n aaaaa", file=sys.stderr, flush=True)
+    # print(batch, "\n\n aaaaa", file=sys.stderr, flush=True)
     if dataset == 'seaquest':
         images = torch.stack([b[0] for b in batch])
     else:

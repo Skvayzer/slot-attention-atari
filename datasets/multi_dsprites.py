@@ -25,8 +25,8 @@ class MultiDSprites(Dataset):
     def __getitem__(self, idx):
         image = self.images[idx]
         image = torch.from_numpy(image).float() / 255
-        if self.mode == 'tetraminoes':
-            image = image * 2 - 1
+        # if self.mode == 'tetrominoes':
+        #     image = image * 2 - 1
         mask = self.masks[idx]
         visibility = self.visibility[idx]
         item = {'image': image, 'mask': mask, 'visibility': visibility}

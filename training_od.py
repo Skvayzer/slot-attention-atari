@@ -142,8 +142,8 @@ if dataset=='seaquest':
     val_dataset = ImageFolder(root=args.val_path, transform=transforms)
     collation = collate_fn
 elif dataset=='tetrominoes':
-    train_dataset = MultiDSprites(path_to_dataset=(args.train_path + '/tetrominoes_train.npz'), mode='tetraminoes')
-    val_dataset = MultiDSprites(path_to_dataset=(args.train_path + '/tetrominoes_val.npz'), mode='tetraminoes')
+    train_dataset = MultiDSprites(path_to_dataset=(args.train_path + '/tetrominoes_train.npz'), mode='tetrominoes')
+    val_dataset = MultiDSprites(path_to_dataset=(args.train_path + '/tetrominoes_val.npz'), mode='tetrominoes')
 
 
 train_loader = DataLoader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True,

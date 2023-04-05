@@ -375,7 +375,11 @@ class SlotAttentionAE(pl.LightningModule):
             imgs = batch[0]
         else:
             imgs = batch['image']
+        print(f"\n\nATTENTION! batch 1 image  {imgs.shape} {imgs[0]} ", file=sys.stderr, flush=True)
+
         result, _, iou_loss, _ = self(imgs, num_slots)
+        print(f"\n\nATTENTION! result image {result.shape} {result[0]} ", file=sys.stderr, flush=True)
+
         loss = F.mse_loss(result, imgs)
         return loss, iou_loss
 

@@ -227,9 +227,14 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         max_epochs = 100
         total_steps = max_epochs * len(self.train_dataloader)
 
+        warmup_steps = 5_000
+        decay_steps = 45_000
+        decay_rate = 0.5
+        total_steps = 50_000
+
         def warm_and_decay_lr_scheduler(step: int):
-            warmup_steps = warmup_steps_pct * total_steps
-            decay_steps = decay_steps_pct * total_steps
+            # warmup_steps = warmup_steps_pct * total_steps
+            # decay_steps = decay_steps_pct * total_steps
             assert step < total_steps
             if step < warmup_steps:
                 factor = step / warmup_steps

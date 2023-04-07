@@ -248,7 +248,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
         print(f"\n\nATTENTION! other: {warmup_epochs} {decay_steps} ", file=sys.stderr, flush=True)
 
-        raise ValueError('A very specific bad thing happened.')
+        # raise ValueError('A very specific bad thing happened.')
 
 
         def warm_and_decay_lr_scheduler(step: int):

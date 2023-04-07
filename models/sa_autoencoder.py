@@ -266,7 +266,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, schedulers=[scheduler1, scheduler2], milestones=[warmup_epochs + 1])
         return (
             [optimizer],
-            [{"lr_scheduler": scheduler, "interval": "epoch",}],
+            [{"scheduler": scheduler, "interval": "step", "frequency": 1,}],
         )
 
 

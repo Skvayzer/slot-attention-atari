@@ -216,7 +216,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
                 })
 
 
-        raise ValueError('A very specific bad thing happened.')
+        # raise ValueError('A very specific bad thing happened.')
 
         return loss
 
@@ -237,7 +237,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         total_steps = 50_000
         steps_in_epoch = len(self.train_dataloader)
         print(f"\n\nATTENTION! steps_in_epoch: {steps_in_epoch} ", file=sys.stderr, flush=True)
-
+        raise ValueError('A very specific bad thing happened.')
         max_epochs = math.ceil(total_steps / steps_in_epoch)
 
         warmup_steps = 5_000

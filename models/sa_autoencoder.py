@@ -1,3 +1,4 @@
+import math
 import os
 import sys
 
@@ -157,16 +158,16 @@ class InvariantSlotAttentionAE(pl.LightningModule):
             imgs = batch[0]
         else:
             imgs = batch['image']
-        result, _, iou_loss, _ = self(imgs, num_slots)
+        result, _, iou_loss, masks = self(imgs, num_slots)
         loss = F.mse_loss(result, imgs)
-        return loss, iou_loss
+        return loss, iou_loss, masks
 
     def training_step(self, batch, batch_idx):
         optimizer = self.optimizers()
         sch = self.lr_schedulers()
         optimizer = optimizer.optimizer
 
-        loss, iou_loss = self.step(batch)
+        loss, iou_loss, _ = self.step(batch)
         self.log('Training MSE', loss)
         self.log('Training iou loss', iou_loss)
 
@@ -181,9 +182,18 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss, iou_loss = self.step(batch, num_slots=self.val_num_slots)
+        loss, iou_loss, pred_masks = self.step(batch, num_slots=self.val_num_slots)
         self.log('Validation MSE', loss)
         self.log('Validation iou', iou_loss)
+
+        true_masks = batch['mask']
+        print("\n\nATTENTION! true_masks: ", true_masks, true_masks.shape, file=sys.stderr, flush=True)
+        print("\n\nATTENTION! pred_masks: ", pred_masks, pred_masks.shape, file=sys.stderr, flush=True)
+
+        pred_masks = pred_masks.view(*pred_masks.shape[:2], -1)
+        true_masks = true_masks.view(*true_masks.shape[:2], -1)
+        # print("ATTENTION! MASKS (true/pred): ", true_masks.shape, pred_masks.shape, file=sys.stderr, flush=True)
+        self.log('ARI', adjusted_rand_index(true_masks.float().cpu(), pred_masks.float().cpu()).mean())
 
         if batch_idx == 0:
             imgs = batch['image']
@@ -205,6 +215,8 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
                 })
 
+
+
         return loss
 
     def validation_epoch_end(self, outputdata):
@@ -221,16 +233,17 @@ class InvariantSlotAttentionAE(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=0)
 
-        warmup_steps_pct = 0.02
-        decay_steps_pct = 0.2
         scheduler_gamma = 0.5
-        max_epochs = 100
-        total_steps = max_epochs * len(self.train_dataloader)
+        total_steps = 50_000
+        steps_in_epoch = len(self.train_dataloader)
+        max_epochs = math.ceil(total_steps / steps_in_epoch)
 
         warmup_steps = 5_000
-        decay_steps = 45_000
+        warmup_epochs = warmup_steps / steps_in_epoch
+        decay_steps = total_steps - warmup_steps
+
         decay_rate = 0.5
-        total_steps = 50_000
+
 
         def warm_and_decay_lr_scheduler(step: int):
             # warmup_steps = warmup_steps_pct * total_steps
@@ -243,12 +256,14 @@ class InvariantSlotAttentionAE(pl.LightningModule):
             factor *= scheduler_gamma ** (step / decay_steps)
             return factor
 
-        scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer=optimizer, lr_lambda=warm_and_decay_lr_scheduler)
-
+        scheduler1 = torch.optim.lr_scheduler.LambdaLR(optimizer=optimizer, lr_lambda=warm_and_decay_lr_scheduler)
+        scheduler2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max_epochs - warmup_epochs, eta_min=0, last_epoch=- 1, verbose=False)
+        scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, schedulers=[scheduler1, scheduler2], milestones=[warmup_epochs + 1])
         return (
             [optimizer],
             [{"scheduler": scheduler, "interval": "step",}],
         )
+
 
 
 class SlotAttentionAE(pl.LightningModule):

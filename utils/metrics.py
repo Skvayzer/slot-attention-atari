@@ -57,8 +57,8 @@ def adjusted_rand_index(true_mask, pred_mask):
         http://scikit-learn.org/stable/modules/generated/\
         sklearn.metrics.adjusted_rand_score.html
     """
-    true_mask = true_mask.permute(0, 2, 1)
-    pred_mask = pred_mask.permute(0, 2, 1)
+    # true_mask = true_mask.permute(0, 2, 1)
+    # pred_mask = pred_mask.permute(0, 2, 1)
     print("ATTENTION! MASKS (true/pred): ", true_mask.shape, pred_mask.shape, file=sys.stderr, flush=True)
     _, n_points, n_true_groups = true_mask.shape
     n_pred_groups = pred_mask.shape[-1]

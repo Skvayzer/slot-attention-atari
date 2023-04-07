@@ -216,7 +216,8 @@ class InvariantSlotAttentionAE(pl.LightningModule):
                 })
 
 
-        return
+        return 5 break
+
         return loss
 
     def validation_epoch_end(self, outputdata):

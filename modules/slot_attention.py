@@ -211,20 +211,20 @@ class InvariantSlotAttention(nn.Module):
 
                 # X = X - X.mean(axis=1).unsqueeze(dim=1)
                 # X += torch.randn(X.shape).cuda()
-                
+
                 # print(f"\n\nATTENTION! X: {X.shape} {X.T.shape}", file=sys.stderr, flush=True)
                 # print(f"\n\nATTENTION! X. swap: {torch.swapaxes(X, 1, 2).shape} ", file=sys.stderr, flush=True)
-                #
+                # 
                 # # Compute the SVD of the standardized data matrix
                 # U, _, _ = torch.pca_lowrank(torch.swapaxes(X, 1, 2), center=True)
-                #
+                # 
                 # # similarly sort the eigenvectors
                 # print(f"\n\nATTENTION! eigen vectors: {U.shape} ", file=sys.stderr, flush=True)
                 # v1, v2 = U[:, 0, :], U[:, 1, :]
-                #
+                # 
                 # # v1, v2 = wpca.fit_transform(centered_grid[batch, slot, :, :], attn_expanded[batch, slot, :])
                 # print(f"\n\nATTENTION! v1 v2 U: {v1.shape} {v2.shape} {U.shape}", file=sys.stderr, flush=True)
-                #
+                # 
                 # S_r[:, i, :, :] = postprocess(v1, v2)
                 # # S_r[:, i, :, :] = U
 

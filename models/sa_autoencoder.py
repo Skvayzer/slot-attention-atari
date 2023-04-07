@@ -237,7 +237,6 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         total_steps = 50_000
         steps_in_epoch = len(self.train_dataloader)
         print(f"\n\nATTENTION! steps_in_epoch: {steps_in_epoch} ", file=sys.stderr, flush=True)
-        # raise ValueError('A very specific bad thing happened.')
 
         max_epochs = math.ceil(total_steps / steps_in_epoch)
 
@@ -247,7 +246,9 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
         decay_rate = 0.5
 
+        print(f"\n\nATTENTION! other: {warmup_epochs} {decay_steps} ", file=sys.stderr, flush=True)
 
+        raise ValueError('A very specific bad thing happened.')
 
 
         def warm_and_decay_lr_scheduler(step: int):
@@ -266,7 +267,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, schedulers=[scheduler1, scheduler2], milestones=[warmup_epochs + 1])
         return (
             [optimizer],
-            [{"scheduler": scheduler, "interval": "step", "frequency": 1,}],
+            [{"scheduler": scheduler, "interval": "epoch",}],
         )
 
 

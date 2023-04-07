@@ -216,7 +216,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
                 })
 
 
-        return 5 break
+        return 5 
 
         return loss
 

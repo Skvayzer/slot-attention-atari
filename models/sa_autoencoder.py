@@ -191,7 +191,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         print("\n\nATTENTION! pred_masks: ", pred_masks, pred_masks.shape, file=sys.stderr, flush=True)
 
         pred_masks = pred_masks.view(*pred_masks.shape[:2], -1)
-        true_masks = true_masks.view(*true_masks.shape[:2], -1)
+        true_masks = true_masks.view(*true_masks.shape[:2], -1)[:, 1:, :]
         # print("ATTENTION! MASKS (true/pred): ", true_masks.shape, pred_masks.shape, file=sys.stderr, flush=True)
         self.log('ARI', adjusted_rand_index(true_masks.float().cpu(), pred_masks.float().cpu()).mean())
 

@@ -216,7 +216,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
                 })
 
 
-        return 5 
+        raise ValueError('A very specific bad thing happened.')
 
         return loss
 

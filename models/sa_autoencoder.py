@@ -233,7 +233,6 @@ class InvariantSlotAttentionAE(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=0)
 
-        scheduler_gamma = 0.5
         total_steps = 50_000
         steps_in_epoch = len(self.train_dataloader)
         max_epochs = math.ceil(total_steps / steps_in_epoch)
@@ -253,11 +252,11 @@ class InvariantSlotAttentionAE(pl.LightningModule):
                 factor = step / warmup_steps
             else:
                 factor = 1
-            factor *= scheduler_gamma ** (step / decay_steps)
+            factor *= decay_rate ** (step / decay_steps)
             return factor
 
         scheduler1 = torch.optim.lr_scheduler.LambdaLR(optimizer=optimizer, lr_lambda=warm_and_decay_lr_scheduler)
-        scheduler2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max_epochs - warmup_epochs, eta_min=0, last_epoch=- 1, verbose=False)
+        scheduler2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max_epochs - warmup_epochs, eta_min=0)
         scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, schedulers=[scheduler1, scheduler2], milestones=[warmup_epochs + 1])
         return (
             [optimizer],

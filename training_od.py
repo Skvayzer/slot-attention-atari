@@ -176,7 +176,7 @@ save_top_k = 1
 checkpoint_callback = ModelCheckpoint(monitor=monitor, save_top_k=save_top_k)
 every_epoch_callback = ModelCheckpoint(every_n_epochs=10, monitor=monitor)
 # Learning rate monitor
-lr_monitor = LearningRateMonitor(logging_interval='step')
+lr_monitor = LearningRateMonitor(logging_interval='epoch')
 
 # logger_callback = SlotAttentionLogger(val_samples=next(iter(val_loader)))
 

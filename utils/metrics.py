@@ -59,10 +59,10 @@ def adjusted_rand_index(true_mask, pred_mask):
     """
     true_mask = true_mask.permute(0, 2, 1)
     pred_mask = pred_mask.permute(0, 2, 1)
-    print("ATTENTION! MASKS (true/pred): ", true_mask.shape, pred_mask.shape, file=sys.stderr, flush=True)
+    # print("ATTENTION! MASKS (true/pred): ", true_mask.shape, pred_mask.shape, file=sys.stderr, flush=True)
     _, n_points, n_true_groups = true_mask.shape
     n_pred_groups = pred_mask.shape[-1]
-    print("ATTA ", n_points, n_true_groups, n_pred_groups, file=sys.stderr, flush=True)
+    # print("ATTA ", n_points, n_true_groups, n_pred_groups, file=sys.stderr, flush=True)
 
     if (n_points <= n_true_groups and n_points <= n_pred_groups):
         raise ValueError(

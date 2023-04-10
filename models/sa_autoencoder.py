@@ -254,12 +254,19 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         def warm_and_decay_lr_scheduler(step: int):
             # warmup_steps = warmup_steps_pct * total_steps
             # decay_steps = decay_steps_pct * total_steps
+
             assert step < total_steps
             if step < warmup_steps:
                 factor = step / warmup_steps
             else:
                 factor = 1
             factor *= decay_rate ** (step / decay_steps)
+
+            # DEBUG
+            assert step < warmup_steps
+            print(f"\n\nATTENTION! warm_and_decay_lr_scheduler step factor: {step} {factor} ", file=sys.stderr,
+                  flush=True)
+
             return factor
 
         scheduler1 = torch.optim.lr_scheduler.LambdaLR(optimizer=optimizer, lr_lambda=warm_and_decay_lr_scheduler)

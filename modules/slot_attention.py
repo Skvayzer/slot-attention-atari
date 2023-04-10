@@ -121,7 +121,7 @@ class InvariantSlotAttention(nn.Module):
         b, n, d, device = *inputs.shape, inputs.device
 
 
-        print(f"\n\nATTENTION! ns d: {n_s} {d}", file=sys.stderr, flush=True)
+        # print(f"\n\nATTENTION! ns d: {n_s} {d}", file=sys.stderr, flush=True)
 
 
         mu = self.slots_mu.expand(b, n_s, -1)
@@ -144,9 +144,9 @@ class InvariantSlotAttention(nn.Module):
         S_p = 2 * torch.rand((b, n_s, 2)).cuda() - 1
         S_s = 1e-2 * torch.randn((b, n_s, 2)).cuda() + 1e-1
         S_r = (np.pi/4) * torch.tanh(torch.randn((b, n_s, 2, 2)).cuda())
-        print(f"\n\nATTENTION! abs grid: {self.abs_grid} {self.abs_grid.shape}", file=sys.stderr, flush=True)
-        print(f"\n\nATTENTION! S_p: {S_p.view(b, n_s, 1, 1, 2).shape} ", file=sys.stderr, flush=True)
-        print(f"\n\nATTENTION! expand abs grid: {self.abs_grid_flattened.expand(b, n_s, -1, 2).shape}", file=sys.stderr, flush=True)
+        # print(f"\n\nATTENTION! abs grid: {self.abs_grid} {self.abs_grid.shape}", file=sys.stderr, flush=True)
+        # print(f"\n\nATTENTION! S_p: {S_p.view(b, n_s, 1, 1, 2).shape} ", file=sys.stderr, flush=True)
+        # print(f"\n\nATTENTION! expand abs grid: {self.abs_grid_flattened.expand(b, n_s, -1, 2).shape}", file=sys.stderr, flush=True)
 
         # rel_grid = (self.abs_grid.expand(b, n_s, -1, -1, -1) - S_p.view(b, n_s, 1, 1, 2))
         # print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
@@ -161,11 +161,11 @@ class InvariantSlotAttention(nn.Module):
             # Computes relative grids per slot, and associated key, value embeddings
             # [64, 20, 128, 128, 2]
             # rel_grid = torch.inverse(S_r) @ (self.abs_grid_flattened.expand(b, n_s, -1, 2) - S_p)
-            print(f"\n\nATTENTION! a?: {((self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2))).shape} ", file=sys.stderr, flush=True)
-            print(f"\n\nATTENTION! torch.inverse(S_r): {torch.inverse(S_r).shape} ", file=sys.stderr, flush=True)
+            # print(f"\n\nATTENTION! a?: {((self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2))).shape} ", file=sys.stderr, flush=True)
+            # print(f"\n\nATTENTION! torch.inverse(S_r): {torch.inverse(S_r).shape} ", file=sys.stderr, flush=True)
 
             rel_grid = torch.einsum('bskd,bsijd->bsijk', torch.inverse(S_r), (self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2)))
-            print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
+            # print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
 
             # encoded_pos = self.encode_pos(inputs, rel_grid.cuda())
             # print(f"\n\nATTENTION! encoded pos: {encoded_pos.shape}", file=sys.stderr, flush=True)
@@ -178,36 +178,36 @@ class InvariantSlotAttention(nn.Module):
 
             k = self.f(self.to_k(inputs).unsqueeze(dim=1) + self.g(rel_grid).view(b, n_s, -1, d))
             v = self.f(self.to_v(inputs).unsqueeze(dim=1) + self.g(rel_grid).view(b, n_s, -1, d))
-            print(f"\n\nATTENTION! k v: {k.shape} {v.shape} ", file=sys.stderr, flush=True)
+            # print(f"\n\nATTENTION! k v: {k.shape} {v.shape} ", file=sys.stderr, flush=True)
 
             # Inverted dot production attention.
             q = self.to_q(slots)
-            print(f"\n\nATTENTION! q: {q.shape} ", file=sys.stderr, flush=True)
+            # print(f"\n\nATTENTION! q: {q.shape} ", file=sys.stderr, flush=True)
 
             dots = torch.einsum('bid,bijd->bij', q, k) * self.scale
             attn = dots.softmax(dim=1) + self.eps
             attn = attn / attn.sum(dim=-1, keepdim=True)
-            print(f"\n\nATTENTION! attn: {attn.shape} ", file=sys.stderr, flush=True)
+            # print(f"\n\nATTENTION! attn: {attn.shape} ", file=sys.stderr, flush=True)
 
             updates = torch.einsum('bijd,bij->bid', v, attn)
 
 
             # abs_grid_expanded = self.abs_grid_flattened.expand(b, self.abs_grid_flattened.shape[0], self.abs_grid_flattened.shape[1])
-            print(f"\n\nATTENTION! updates: {updates.shape} ", file=sys.stderr, flush=True)
+            # print(f"\n\nATTENTION! updates: {updates.shape} ", file=sys.stderr, flush=True)
 
-            print(f"\n\nATTENTION! sp fl grid: {self.abs_grid_flattened.shape} ", file=sys.stderr, flush=True)
+            # print(f"\n\nATTENTION! sp fl grid: {self.abs_grid_flattened.shape} ", file=sys.stderr, flush=True)
 
             # attn_rect = attn.view(b, n_s, *self.resolution)
             centered_grid = (self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2)).view(b, n_s, -1, 2)
             attn_expanded = attn.unsqueeze(dim=-1).expand(*attn.shape, 2)
 
-            print(f"\n\nATTENTION! centered grid | att_rect: {centered_grid.shape} {attn_expanded.shape} ", file=sys.stderr, flush=True)
+            # print(f"\n\nATTENTION! centered grid | att_rect: {centered_grid.shape} {attn_expanded.shape} ", file=sys.stderr, flush=True)
             # Updates Sp, Ss and slots.
             for i in range(n_s):
                 S_p[:, i, :] = (attn[:, i] @ self.abs_grid_flattened) / attn[:, i].sum(dim=-1, keepdim=True)
                 # X_weighted = self.abs_grid @ attn
                 X = (centered_grid[:, i, :, :] * attn_expanded[:, i, :, :])
-                print(f"\n\nATTENTION! X.mean(axis=1): {X.mean(axis=1).shape} ", file=sys.stderr, flush=True)
+                # print(f"\n\nATTENTION! X.mean(axis=1): {X.mean(axis=1).shape} ", file=sys.stderr, flush=True)
 
                 # X = X - X.mean(axis=1).unsqueeze(dim=1)
                 # X += torch.randn(X.shape).cuda()
@@ -230,7 +230,7 @@ class InvariantSlotAttention(nn.Module):
 
 
 
-            print(f"\n\nATTENTION! S_p: {S_p.shape} ", file=sys.stderr, flush=True)
+            # print(f"\n\nATTENTION! S_p: {S_p.shape} ", file=sys.stderr, flush=True)
 
             # S_s = (((attn + self.eps)*(grid - S_p)**2).sum(dim=-1, keepdim=True)/(attn + self.eps).sum(dim=-1, keepdim=True))**0.5
             # v1, v2 = WPCA().fit_transform(self.abs_grid, attn)

@@ -118,16 +118,16 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
         slots, S_p, S_r = self.slot_attention(x, n_s=num_slots)
         S_p = S_p.unsqueeze(dim=2)
-        print(f"\n\nATTENTION! before dec S_p: {S_p.shape} ", file=sys.stderr, flush=True)
+        # print(f"\n\nATTENTION! before dec S_p: {S_p.shape} ", file=sys.stderr, flush=True)
 
         x = spatial_broadcast(slots, self.decoder_initial_size)
         # _, pos_emb = self.dec_emb(x)
         grid = self.dec_emb.grid.unsqueeze(dim=0).view(1, 1, -1, 2)
-        print(f"\n\nATTENTION! before dec pos emb: {grid.shape} ", file=sys.stderr, flush=True)
+        # print(f"\n\nATTENTION! before dec pos emb: {grid.shape} ", file=sys.stderr, flush=True)
         # print(f"\n\nATTENTION! S_r: {S_r.shape} ", file=sys.stderr, flush=True)
 
         rel_grid = grid - S_p
-        print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
+        # print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
 
         # rel_grid_final = torch.zeros(rel_grid.shape).cuda()
         # rel_grid = torch.einsum('bskd,bsijd->bsijk', torch.inverse(S_r), grid - S_p)
@@ -137,8 +137,8 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         # rel_grid_final = torch.einsum("bsij,bskj->bski", S_r_inverse, rel_grid)
         rel_grid_final = rel_grid
 
-        print(f"\n\nATTENTION! before dec: {x.shape} ", file=sys.stderr, flush=True)
-        print(f"\n\nATTENTION! self.h(rel_grid): {self.h(rel_grid_final).reshape(-1, self.slot_size, *self.decoder_initial_size).shape} ", file=sys.stderr, flush=True)
+        # print(f"\n\nATTENTION! before dec: {x.shape} ", file=sys.stderr, flush=True)
+        # print(f"\n\nATTENTION! self.h(rel_grid): {self.h(rel_grid_final).reshape(-1, self.slot_size, *self.decoder_initial_size).shape} ", file=sys.stderr, flush=True)
 
         x = self.decoder(x + self.h(rel_grid_final).reshape(-1, self.slot_size, *self.decoder_initial_size))
 
@@ -187,8 +187,8 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         self.log('Validation iou', iou_loss)
 
         true_masks = batch['mask']
-        print("\n\nATTENTION! true_masks: ", true_masks, true_masks.shape, file=sys.stderr, flush=True)
-        print("\n\nATTENTION! pred_masks: ", pred_masks, pred_masks.shape, file=sys.stderr, flush=True)
+        # print("\n\nATTENTION! true_masks: ", true_masks, true_masks.shape, file=sys.stderr, flush=True)
+        # print("\n\nATTENTION! pred_masks: ", pred_masks, pred_masks.shape, file=sys.stderr, flush=True)
 
         pred_masks = pred_masks.view(*pred_masks.shape[:2], -1)
         true_masks = true_masks.view(*true_masks.shape[:2], -1)[:, 1:, :]
@@ -200,8 +200,8 @@ class InvariantSlotAttentionAE(pl.LightningModule):
             imgs = imgs[:8]
 
             result, recons, _, pred_masks = self(imgs, num_slots=self.val_num_slots)
-            print("\n\nATTENTION! imgs: ", imgs.shape, file=sys.stderr, flush=True)
-            print("\n\nATTENTION! recons: ", recons.shape, file=sys.stderr, flush=True)
+            # print("\n\nATTENTION! imgs: ", imgs.shape, file=sys.stderr, flush=True)
+            # print("\n\nATTENTION! recons: ", recons.shape, file=sys.stderr, flush=True)
 
             self.trainer.logger.experiment.log({
                 'images': [wandb.Image(x / 2 + 0.5) for x in torch.clamp(imgs, -1, 1)],

@@ -260,7 +260,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
                 factor = step / warmup_steps
             else:
                 factor = 1
-            factor *= decay_rate ** (step / decay_steps)
+            # factor *= decay_rate ** (step / decay_steps)
 
             # DEBUG
             assert step < warmup_steps

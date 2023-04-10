@@ -10,7 +10,7 @@ from torch import nn
 from torch.nn import functional as F
 from torch.optim import lr_scheduler
 
-from modules import Decoder, PosEmbeds, ISAPosEmbeds, CoordQuantizer, MultiDspritesDecoder
+from modules import Decoder, PosEmbeds, ISAPosEmbeds, CoordQuantizer, MultiDspritesDecoder, TetrominoesDecoder
 from modules.slot_attention import SlotAttentionBase, InvariantSlotAttention
 from utils import spatial_broadcast, spatial_flatten, adjusted_rand_index, mask_iou
 
@@ -27,7 +27,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
                  num_iters=3,
                  in_channels=3,
                  slot_size=64,
-                 hidden_size=32,
+                 hidden_size=64,
                  dataset='',
                  task='',
                  invariance=True,
@@ -57,10 +57,16 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         )
 
 
+
         # Decoder
         if dataset=='seaquest':
             self.decoder_initial_size = (8, 8)
             self.decoder = Decoder(num_channels=slot_size)
+        elif dataset=='tetrominoes':
+            self.decoder_initial_size = self.resolution
+            self.decoder = TetrominoesDecoder(in_channels=self.slot_size,
+                                                hidden_channels=256,
+                                                out_channels=4)
         else:
             self.decoder_initial_size = self.resolution
             self.decoder = MultiDspritesDecoder(in_channels=self.slot_size,
@@ -263,7 +269,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
             # factor *= decay_rate ** (step / decay_steps)
 
             # DEBUG
-            assert step < warmup_steps
+            # assert step < warmup_steps
             print(f"\n\nATTENTION! warm_and_decay_lr_scheduler step factor: {step} {factor} ", file=sys.stderr,
                   flush=True)
 

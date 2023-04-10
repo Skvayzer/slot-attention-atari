@@ -67,3 +67,24 @@ class MultiDspritesDecoder(nn.Module):
 
     def forward(self, x):
         return self.decoder_cnn(x)
+
+class TetrominoesDecoder(nn.Module):
+    def __init__(self,
+                 *,
+                 in_channels: int = 64,
+                 hidden_channels: int = 256,
+                 out_channels: int = 4):
+        super(TetrominoesDecoder, self).__init__()
+
+        self.decoder_mlp = nn.Sequential(
+            nn.Linear(in_channels, hidden_channels), nn.ReLU(),
+            nn.Linear(hidden_channels, hidden_channels), nn.ReLU(),
+            nn.Linear(hidden_channels, hidden_channels), nn.ReLU(),
+            nn.Linear(hidden_channels, hidden_channels), nn.ReLU(),
+            nn.Linear(hidden_channels, out_channels), nn.ReLU(),
+
+        )
+
+    def forward(self, x):
+        return self.decoder_mlp(x)
+

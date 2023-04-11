@@ -276,7 +276,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
             return factor
 
         scheduler1 = torch.optim.lr_scheduler.LambdaLR(optimizer=optimizer, lr_lambda=warm_and_decay_lr_scheduler)
-        scheduler2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=warmup_steps, eta_min=0)
+        scheduler2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=total_steps - warmup_steps, eta_min=0)
         scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, schedulers=[scheduler1, scheduler2], milestones=[warmup_steps + 1])
         # scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, schedulers=[scheduler2], milestones=[])
 

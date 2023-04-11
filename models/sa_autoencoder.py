@@ -169,9 +169,9 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         return loss, iou_loss, masks
 
     def training_step(self, batch, batch_idx):
-        # optimizer = self.optimizers()
+        optimizer = self.optimizers()
         sch = self.lr_schedulers()
-        # optimizer = optimizer.optimizer
+        optimizer = optimizer.optimizer
 
         loss, iou_loss, _ = self.step(batch)
         self.log('Training MSE', loss)
@@ -179,10 +179,10 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
 
         loss = loss + iou_loss * self.beta
-        # optimizer.zero_grad()
-        # loss.backward()
-        # optimizer.step()
-        # sch.step()
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        sch.step()
 
         self.log('lr', sch.get_last_lr()[0], on_step=False, on_epoch=True)
         return loss
@@ -276,9 +276,9 @@ class InvariantSlotAttentionAE(pl.LightningModule):
             return factor
 
         scheduler1 = torch.optim.lr_scheduler.LambdaLR(optimizer=optimizer, lr_lambda=warm_and_decay_lr_scheduler)
-        scheduler2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max_epochs, eta_min=0)
-        # scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, schedulers=[scheduler1, scheduler2], milestones=[warmup_steps + 1])
-        scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, schedulers=[scheduler2], milestones=[])
+        scheduler2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=warmup_steps, eta_min=0)
+        scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, schedulers=[scheduler1, scheduler2], milestones=[warmup_steps + 1])
+        # scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, schedulers=[scheduler2], milestones=[])
 
         return (
             [optimizer],

@@ -100,7 +100,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
     def forward(self, inputs, num_slots=None, test=False):
         x = self.encoder(inputs)
-        print(f"\n\nATTENTION! encoded {encoded.shape} ", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! encoded {x.shape} ", file=sys.stderr, flush=True)
         torch.autograd.set_detect_anomaly(True)
 
         if not self.invariance:

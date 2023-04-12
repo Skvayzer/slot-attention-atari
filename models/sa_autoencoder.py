@@ -62,11 +62,11 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         if dataset=='seaquest':
             self.decoder_initial_size = (8, 8)
             self.decoder = Decoder(num_channels=slot_size)
-        elif dataset=='tetrominoes':
-            self.decoder_initial_size = self.resolution
-            self.decoder = TetrominoesDecoder(in_channels=self.slot_size,
-                                                hidden_channels=256,
-                                                out_channels=4)
+        # elif dataset=='tetrominoes':
+        #     self.decoder_initial_size = self.resolution
+        #     self.decoder = TetrominoesDecoder(in_channels=self.slot_size,
+        #                                         hidden_channels=256,
+        #                                         out_channels=4)
         else:
             self.decoder_initial_size = self.resolution
             self.decoder = MultiDspritesDecoder(in_channels=self.slot_size,

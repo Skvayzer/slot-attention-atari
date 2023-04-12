@@ -184,7 +184,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         optimizer.step()
         sch.step()
 
-        self.log('lr', sch.get_last_lr()[0], on_step=False, on_epoch=True)
+        self.log('lr', sch.get_last_lr()[0], on_step=True, on_epoch=False)
         return loss
 
     def validation_step(self, batch, batch_idx):

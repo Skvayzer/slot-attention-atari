@@ -207,7 +207,7 @@ print(torch.cuda.device_count(), flush=True)
 # trainer
 trainer = pl.Trainer(accelerator=accelerator,
                      devices=[0],
-                     max_epochs=args.max_epochs,
+                     max_steps=args.max_steps,
                      profiler=profiler,
                      callbacks=callbacks,
                      logger=wandb_logger,

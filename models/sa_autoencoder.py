@@ -62,11 +62,11 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         if dataset=='seaquest':
             self.decoder_initial_size = (8, 8)
             self.decoder = Decoder(num_channels=slot_size)
-        # elif dataset=='tetrominoes':
-        #     self.decoder_initial_size = self.resolution
-        #     self.decoder = TetrominoesDecoder(in_channels=self.slot_size,
-        #                                         hidden_channels=256,
-        #                                         out_channels=4)
+        elif dataset=='tetrominoes':
+            self.decoder_initial_size = self.resolution
+            self.decoder = TetrominoesDecoder(in_channels=self.slot_size,
+                                                hidden_channels=256,
+                                                out_channels=4)
         else:
             self.decoder_initial_size = self.resolution
             self.decoder = MultiDspritesDecoder(in_channels=self.slot_size,
@@ -100,7 +100,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
     def forward(self, inputs, num_slots=None, test=False):
         x = self.encoder(inputs)
-        # print(f"\n\nATTENTION! encoded {encoded.shape} ", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! encoded {encoded.shape} ", file=sys.stderr, flush=True)
         torch.autograd.set_detect_anomaly(True)
 
         if not self.invariance:
@@ -143,8 +143,8 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         # rel_grid_final = torch.einsum("bsij,bskj->bski", S_r_inverse, rel_grid)
         rel_grid_final = rel_grid
 
-        # print(f"\n\nATTENTION! before dec: {x.shape} ", file=sys.stderr, flush=True)
-        # print(f"\n\nATTENTION! self.h(rel_grid): {self.h(rel_grid_final).reshape(-1, self.slot_size, *self.decoder_initial_size).shape} ", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! before dec: {x.shape} ", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! self.h(rel_grid): {self.h(rel_grid_final).reshape(-1, self.slot_size, *self.decoder_initial_size).shape} ", file=sys.stderr, flush=True)
 
         x = self.decoder(x + self.h(rel_grid_final).reshape(-1, self.slot_size, *self.decoder_initial_size))
 

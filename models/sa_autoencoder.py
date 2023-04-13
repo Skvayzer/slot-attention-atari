@@ -293,7 +293,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
         return (
             [optimizer],
-            [{"scheduler": scheduler, "interval": "epoch",}],
+            [{"scheduler": scheduler, "interval": "step",}],
         )
 
 

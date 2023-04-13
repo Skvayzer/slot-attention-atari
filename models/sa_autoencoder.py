@@ -157,7 +157,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         print(f"\n\nATTENTION! after dec: {x.shape} ", file=sys.stderr, flush=True)
 
 
-        # x = x.reshape(inputs.shape[0], num_slots, *x.shape[1:])
+        x = x.reshape(inputs.shape[0], num_slots, *x.shape[1:])
         print(f"\n\nATTENTION! reshaped: {x.shape} ", file=sys.stderr, flush=True)
 
         recons, masks = torch.split(x, self.in_channels, dim=2)

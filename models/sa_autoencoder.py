@@ -64,7 +64,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
             self.decoder = Decoder(num_channels=slot_size)
         elif dataset=='tetrominoes':
             self.decoder_initial_size = self.resolution
-            self.decoder = TetrominoesDecoder(in_channels=self.slot_size,
+            self.decoder = TetrominoesDecoder(in_channels=self.resolution[0]*self.resolution[1],
                                                 hidden_channels=256,
                                                 out_channels=4)
         else:

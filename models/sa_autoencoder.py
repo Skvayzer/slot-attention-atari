@@ -62,11 +62,11 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         if dataset=='seaquest':
             self.decoder_initial_size = (8, 8)
             self.decoder = Decoder(num_channels=slot_size)
-        elif dataset=='tetrominoes':
-            self.decoder_initial_size = self.resolution
-            self.decoder = TetrominoesDecoder(in_channels=self.resolution[0]*self.resolution[1],
-                                                hidden_channels=256,
-                                                out_channels=4)
+        # elif dataset=='tetrominoes':
+        #     self.decoder_initial_size = self.resolution
+        #     self.decoder = TetrominoesDecoder(in_channels=self.resolution[0]*self.resolution[1],
+        #                                         hidden_channels=256,
+        #                                         out_channels=4)
         else:
             self.decoder_initial_size = self.resolution
             self.decoder = MultiDspritesDecoder(in_channels=self.slot_size,
@@ -144,8 +144,10 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         rel_grid_final = rel_grid
 
 
-        x = x.reshape(*x.shape[:2], -1)
-        pos_emb = self.h(rel_grid_final).reshape(*x.shape[:2], -1)
+        # x = x.reshape(*x.shape[:2], -1)
+        # pos_emb = self.h(rel_grid_final).reshape(*x.shape[:2], -1)
+        pos_emb = self.h(rel_grid_final).reshape(*x.shape[:2], *self.decoder_initial_size)
+
         print(f"\n\nATTENTION! before dec: {x.shape} ", file=sys.stderr, flush=True)
         print(f"\n\nATTENTION! self.h(rel_grid): {pos_emb.shape} ", file=sys.stderr, flush=True)
 
@@ -155,7 +157,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         print(f"\n\nATTENTION! after dec: {x.shape} ", file=sys.stderr, flush=True)
 
 
-        x = x.reshape(inputs.shape[0], num_slots, *x.shape[1:])
+        # x = x.reshape(inputs.shape[0], num_slots, *x.shape[1:])
         print(f"\n\nATTENTION! reshaped: {x.shape} ", file=sys.stderr, flush=True)
 
         recons, masks = torch.split(x, self.in_channels, dim=2)
@@ -178,9 +180,9 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         return loss, iou_loss, masks
 
     def training_step(self, batch, batch_idx):
-        optimizer = self.optimizers()
-        sch = self.lr_schedulers()
-        optimizer = optimizer.optimizer
+        # optimizer = self.optimizers()
+        # sch = self.lr_schedulers()
+        # optimizer = optimizer.optimizer
 
         loss, iou_loss, _ = self.step(batch)
         self.log('Training MSE', loss)
@@ -188,12 +190,12 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
 
         loss = loss + iou_loss * self.beta
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-        sch.step()
+        # optimizer.zero_grad()
+        # loss.backward()
+        # optimizer.step()
+        # sch.step()
 
-        self.log('lr', sch.get_last_lr()[0], on_step=False, on_epoch=True)
+        # self.log('lr', sch.get_last_lr()[0], on_step=False, on_epoch=True)
         return loss
 
     def validation_step(self, batch, batch_idx):

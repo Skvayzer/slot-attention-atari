@@ -143,10 +143,14 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         # rel_grid_final = torch.einsum("bsij,bskj->bski", S_r_inverse, rel_grid)
         rel_grid_final = rel_grid
 
-        print(f"\n\nATTENTION! before dec: {x.shape} ", file=sys.stderr, flush=True)
-        print(f"\n\nATTENTION! self.h(rel_grid): {self.h(rel_grid_final).reshape(-1, self.slot_size, *self.decoder_initial_size).shape} ", file=sys.stderr, flush=True)
 
-        x = self.decoder(x + self.h(rel_grid_final).reshape(-1, self.slot_size, *self.decoder_initial_size))
+        x = x.reshape(*x.shape[:2], -1)
+        pos_emb = self.h(rel_grid_final).reshape(*x.shape[:2], -1)
+        print(f"\n\nATTENTION! before dec: {x.shape} ", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! self.h(rel_grid): {pos_emb.shape} ", file=sys.stderr, flush=True)
+
+
+        x = self.decoder(x + pos_emb)
 
         x = x.reshape(inputs.shape[0], num_slots, *x.shape[1:])
         recons, masks = torch.split(x, self.in_channels, dim=2)
@@ -184,7 +188,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         optimizer.step()
         sch.step()
 
-        self.log('lr', sch.get_last_lr()[0], on_step=True, on_epoch=False)
+        self.log('lr', sch.get_last_lr()[0], on_step=False, on_epoch=True)
         return loss
 
     def validation_step(self, batch, batch_idx):

@@ -71,7 +71,7 @@ class MultiDspritesDecoder(nn.Module):
 class TetrominoesDecoder(nn.Module):
     def __init__(self,
                  *,
-                 in_channels: int = 64,
+                 in_channels: int = 35*35,
                  hidden_channels: int = 256,
                  out_channels: int = 4):
         super(TetrominoesDecoder, self).__init__()

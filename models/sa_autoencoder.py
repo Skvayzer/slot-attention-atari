@@ -240,7 +240,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
     def validation_epoch_end(self, outputdata):
         if self.current_epoch % 10 == 0:
             save_path = "./sa_autoencoder_end_to_end/" + f'{self.dataset}' + '/' + f'{self.task}'
-            self.trainer.save_checkpoint(os.path.join(save_path, f"{self.current_epoch}_{self.beta}_{self.task}_{self.dataset}_od_pretrained.ckpt"))
+            # self.trainer.save_checkpoint(os.path.join(save_path, f"{self.current_epoch}_{self.beta}_{self.task}_{self.dataset}_od_pretrained.ckpt"))
 
     # def configure_optimizers(self):
     #     optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)

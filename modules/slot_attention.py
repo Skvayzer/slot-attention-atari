@@ -200,15 +200,15 @@ class InvariantSlotAttention(nn.Module):
             # print(f"\n\nATTENTION! sp fl grid: {self.abs_grid_flattened.shape} ", file=sys.stderr, flush=True)
 
             # attn_rect = attn.view(b, n_s, *self.resolution)
-            centered_grid = (self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2)).view(b, n_s, -1, 2)
-            attn_expanded = attn.unsqueeze(dim=-1).expand(*attn.shape, 2)
+            # centered_grid = (self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2)).view(b, n_s, -1, 2)
+            # attn_expanded = attn.unsqueeze(dim=-1).expand(*attn.shape, 2)
 
             # print(f"\n\nATTENTION! centered grid | att_rect: {centered_grid.shape} {attn_expanded.shape} ", file=sys.stderr, flush=True)
             # Updates Sp, Ss and slots.
             for i in range(n_s):
                 S_p[:, i, :] = (attn[:, i] @ self.abs_grid_flattened) / attn[:, i].sum(dim=-1, keepdim=True)
                 # X_weighted = self.abs_grid @ attn
-                X = (centered_grid[:, i, :, :] * attn_expanded[:, i, :, :])
+                # X = (centered_grid[:, i, :, :] * attn_expanded[:, i, :, :])
                 # print(f"\n\nATTENTION! X.mean(axis=1): {X.mean(axis=1).shape} ", file=sys.stderr, flush=True)
 
                 # X = X - X.mean(axis=1).unsqueeze(dim=1)

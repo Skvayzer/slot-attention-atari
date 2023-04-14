@@ -493,34 +493,82 @@ class SlotAttentionAE(pl.LightningModule):
     #     scheduler = lr_scheduler.OneCycleLR(optimizer, max_lr=self.lr, total_steps=int(self.num_steps), pct_start=0.05)
     #     return [optimizer], [scheduler]
 
+    # def configure_optimizers(self):
+    #     optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=0)
+    #
+    #     warmup_steps_pct = 0.02
+    #     decay_steps_pct = 0.2
+    #     scheduler_gamma = 0.5
+    #     max_epochs = 100
+    #     total_steps = max_epochs * len(self.train_dataloader)
+    #
+    #     warmup_steps = 10_000
+    #     decay_steps = 100_000
+    #     decay_rate = 0.5
+    #     total_steps = 500_000
+    #
+    #     def warm_and_decay_lr_scheduler(step: int):
+    #         # warmup_steps = warmup_steps_pct * total_steps
+    #         # decay_steps = decay_steps_pct * total_steps
+    #         assert step < total_steps
+    #         if step < warmup_steps:
+    #             factor = step / warmup_steps
+    #         else:
+    #             factor = 1
+    #         factor *= scheduler_gamma ** (step / decay_steps)
+    #         return factor
+    #
+    #     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer=optimizer, lr_lambda=warm_and_decay_lr_scheduler)
+    #
+    #     return (
+    #         [optimizer],
+    #         [{"scheduler": scheduler, "interval": "step", }],
+    #     )
+
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=0)
 
-        warmup_steps_pct = 0.02
-        decay_steps_pct = 0.2
-        scheduler_gamma = 0.5
-        max_epochs = 100
-        total_steps = max_epochs * len(self.train_dataloader)
+        total_steps = 50_000
+        steps_in_epoch = len(self.train_dataloader)
+        print(f"\n\nATTENTION! steps_in_epoch: {steps_in_epoch} ", file=sys.stderr, flush=True)
 
-        warmup_steps = 10_000
-        decay_steps = 100_000
+        max_epochs = math.ceil(total_steps / steps_in_epoch)
+
+        warmup_steps = 5_000
+        warmup_epochs = warmup_steps / steps_in_epoch
+        decay_steps = total_steps - warmup_steps
+
         decay_rate = 0.5
-        total_steps = 500_000
+
+        print(f"\n\nATTENTION! other: {warmup_epochs} {decay_steps} ", file=sys.stderr, flush=True)
+
+        # raise ValueError('A very specific bad thing happened.')
+
 
         def warm_and_decay_lr_scheduler(step: int):
             # warmup_steps = warmup_steps_pct * total_steps
             # decay_steps = decay_steps_pct * total_steps
+
             assert step < total_steps
             if step < warmup_steps:
                 factor = step / warmup_steps
             else:
                 factor = 1
-            factor *= scheduler_gamma ** (step / decay_steps)
+            # factor *= decay_rate ** (step / decay_steps)
+
+            # DEBUG
+            # assert step < warmup_steps
+            print(f"\n\nATTENTION! warm_and_decay_lr_scheduler step factor: {step} {factor} ", file=sys.stderr,
+                  flush=True)
+
             return factor
 
-        scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer=optimizer, lr_lambda=warm_and_decay_lr_scheduler)
+        scheduler1 = torch.optim.lr_scheduler.LambdaLR(optimizer=optimizer, lr_lambda=warm_and_decay_lr_scheduler)
+        scheduler2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=total_steps - warmup_steps, eta_min=0)
+        scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, schedulers=[scheduler1, scheduler2], milestones=[warmup_steps + 1])
+        # scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, schedulers=[scheduler2], milestones=[])
 
         return (
             [optimizer],
-            [{"scheduler": scheduler, "interval": "step", }],
+            [{"scheduler": scheduler, "interval": "step",}],
         )

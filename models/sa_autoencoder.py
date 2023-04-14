@@ -180,9 +180,9 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         return loss, iou_loss, masks
 
     def training_step(self, batch, batch_idx):
-        # optimizer = self.optimizers()
-        # sch = self.lr_schedulers()
-        # optimizer = optimizer.optimizer
+        optimizer = self.optimizers()
+        sch = self.lr_schedulers()
+        optimizer = optimizer.optimizer
 
         loss, iou_loss, _ = self.step(batch)
         self.log('Training MSE', loss)
@@ -190,12 +190,12 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
 
         loss = loss + iou_loss * self.beta
-        # optimizer.zero_grad()
-        # loss.backward()
-        # optimizer.step()
-        # sch.step()
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        sch.step()
 
-        # self.log('lr', sch.get_last_lr()[0], on_step=False, on_epoch=True)
+        self.log('lr', sch.get_last_lr()[0], on_step=True, on_epoch=False)
         return loss
 
     def validation_step(self, batch, batch_idx):

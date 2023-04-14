@@ -426,20 +426,20 @@ class SlotAttentionAE(pl.LightningModule):
             imgs = batch['image']
         # print(f"\n\nATTENTION! batch 1 image  {imgs.shape} {imgs[0]} ", file=sys.stderr, flush=True)
 
-        result, _, iou_loss, _ = self(imgs, num_slots)
+        result, _, iou_loss, pred_masks = self(imgs, num_slots)
         # print(f"\n\nATTENTION! result image {result.shape} {result[0]} ", file=sys.stderr, flush=True)
 
         loss = F.mse_loss(result, imgs)
         # print(f"\n\nATTENTION! loss {loss} ", file=sys.stderr, flush=True)
 
-        return loss, iou_loss
+        return loss, iou_loss, pred_masks
 
     def training_step(self, batch, batch_idx):
         optimizer = self.optimizers()
         sch = self.lr_schedulers()
         optimizer = optimizer.optimizer
 
-        loss, iou_loss = self.step(batch)
+        loss, iou_loss, _ = self.step(batch)
         self.log('Training MSE', loss)
         self.log('Training iou loss', iou_loss)
 
@@ -453,9 +453,18 @@ class SlotAttentionAE(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss, iou_loss = self.step(batch, num_slots=self.val_num_slots)
+        loss, iou_loss, pred_masks = self.step(batch, num_slots=self.val_num_slots)
         self.log('Validation MSE', loss)
         self.log('Validation iou', iou_loss)
+
+        true_masks = batch['mask']
+        # print("\n\nATTENTION! true_masks: ", true_masks, true_masks.shape, file=sys.stderr, flush=True)
+        # print("\n\nATTENTION! pred_masks: ", pred_masks, pred_masks.shape, file=sys.stderr, flush=True)
+
+        pred_masks = pred_masks.view(*pred_masks.shape[:2], -1)
+        true_masks = true_masks.view(*true_masks.shape[:2], -1)[:, 1:, :]
+        # print("ATTENTION! MASKS (true/pred): ", true_masks.shape, pred_masks.shape, file=sys.stderr, flush=True)
+        self.log('ARI', adjusted_rand_index(true_masks.float().cpu(), pred_masks.float().cpu()).mean())
 
         if batch_idx == 0:
             imgs = batch['image']

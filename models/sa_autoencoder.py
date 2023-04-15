@@ -74,7 +74,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
                                    out_channels=4,
                                    mode=dataset)
 
-        # self.enc_emb = ISAPosEmbeds(hidden_size, self.resolution)
+        self.enc_emb = ISAPosEmbeds(hidden_size, self.resolution)
         self.dec_emb = ISAPosEmbeds(hidden_size, self.decoder_initial_size)
         self.h = nn.Linear(2, slot_size)
 
@@ -97,23 +97,28 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         self.beta = beta
         self.save_hyperparameters()
 
+    def preprocess(self, encoded):
+        x = spatial_flatten(encoded)
+        x = self.enc_layer_norm(x)
+        x = self.enc_mlp(x)
+        x = self.norm_input(x)
 
     def forward(self, inputs, num_slots=None, test=False):
         x = self.encoder(inputs)
         print(f"\n\nATTENTION! encoded {x.shape} ", file=sys.stderr, flush=True)
-        torch.autograd.set_detect_anomaly(True)
+        # torch.autograd.set_detect_anomaly(True)
 
-        if not self.invariance:
-            x = self.enc_emb(x)
-            # print(f"\n\nATTENTION! x {x[0].shape} {x[1]} ", file=sys.stderr, flush=True)
-            x = spatial_flatten(x[0])
-            # print(f"\n\nATTENTION! x {x.shape} ", file=sys.stderr, flush=True)
+        # if not self.invariance:
+        x = self.enc_emb(x)
+        # print(f"\n\nATTENTION! x {x[0].shape} {x[1]} ", file=sys.stderr, flush=True)
+        x = spatial_flatten(x[0])
+        # print(f"\n\nATTENTION! x {x.shape} ", file=sys.stderr, flush=True)
 
-            x = self.layer_norm(x)
-            # print(f"\n\nATTENTION! x {x.shape} ", file=sys.stderr, flush=True)
+        x = self.layer_norm(x)
+        # print(f"\n\nATTENTION! x {x.shape} ", file=sys.stderr, flush=True)
 
-            x = self.mlp(x)
-            # print(f"\n\nATTENTION! x {x.shape} ", file=sys.stderr, flush=True)
+        x = self.mlp(x)
+        # print(f"\n\nATTENTION! x {x.shape} ", file=sys.stderr, flush=True)
 
 
 
@@ -122,17 +127,22 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         if num_slots is None:
             num_slots = self.num_slots
 
-        slots, S_p, S_r = self.slot_attention(x, n_s=num_slots)
-        S_p = S_p.unsqueeze(dim=2)
+        grid = self.dec_emb.grid.unsqueeze(dim=0).view(1, 1, -1, 2)
+
+        if self.invariance:
+            slots, S_p, S_r = self.slot_attention(x, n_s=num_slots)
+            S_p = S_p.unsqueeze(dim=2)
+            rel_grid = grid - S_p
+        else:
+            slots = self.slot_attention(x, n_s=num_slots)
+            rel_grid = grid
         # print(f"\n\nATTENTION! before dec S_p: {S_p.shape} ", file=sys.stderr, flush=True)
 
         x = spatial_broadcast(slots, self.decoder_initial_size)
         # _, pos_emb = self.dec_emb(x)
-        grid = self.dec_emb.grid.unsqueeze(dim=0).view(1, 1, -1, 2)
         # print(f"\n\nATTENTION! before dec pos emb: {grid.shape} ", file=sys.stderr, flush=True)
         # print(f"\n\nATTENTION! S_r: {S_r.shape} ", file=sys.stderr, flush=True)
 
-        rel_grid = grid - S_p
         # print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
 
         # rel_grid_final = torch.zeros(rel_grid.shape).cuda()

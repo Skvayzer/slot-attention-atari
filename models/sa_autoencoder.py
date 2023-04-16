@@ -102,6 +102,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         x = self.enc_layer_norm(x)
         x = self.enc_mlp(x)
         x = self.norm_input(x)
+        return x
 
     def forward(self, inputs, num_slots=None, test=False):
         x = self.encoder(inputs)

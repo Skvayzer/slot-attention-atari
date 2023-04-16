@@ -109,8 +109,8 @@ class InvariantSlotAttention(nn.Module):
         x = self.enc_layer_norm(x)
         x = self.enc_mlp(x)
         x = self.norm_input(x)
-
         return x
+
     def forward(self, inputs, n_s=None, grid=None,  *args, **kwargs):
 
         if n_s is None:
@@ -165,9 +165,9 @@ class InvariantSlotAttention(nn.Module):
             # print(f"\n\nATTENTION! torch.inverse(S_r): {torch.inverse(S_r).shape} ", file=sys.stderr, flush=True)
 
             # rel_grid = torch.einsum('bskd,bsijd->bsijk', torch.inverse(S_r), (self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2)))
-            rel_grid = self.abs_grid.unsqueeze(dim=0) #- S_p.view(b, n_s, 1, 1, 2)
+            rel_grid = self.abs_grid.unsqueeze(dim=0) - torch.zeros((b, n_s, 1, 1, 2)) #- S_p.view(b, n_s, 1, 1, 2)
 
-            # print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
+            print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
 
             # encoded_pos = self.encode_pos(inputs, rel_grid.cuda())
             # print(f"\n\nATTENTION! encoded pos: {encoded_pos.shape}", file=sys.stderr, flush=True)

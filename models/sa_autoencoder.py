@@ -132,7 +132,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
         if self.invariance:
             slots, S_p, S_r = self.slot_attention(x, n_s=num_slots)
-            S_p = S_p.unsqueeze(dim=2)
+            S_p = S_p.unsqueeze(dim=2)  
             rel_grid = grid - torch.zeros(S_p.shape).cuda() #- S_p
         else:
             slots = self.slot_attention(x, n_s=num_slots)

@@ -160,10 +160,11 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         # pos_emb = self.h(rel_grid_final).reshape(*x.shape[:2], *self.decoder_initial_size)
         temp = self.h(rel_grid_final)
         print(f"\n\nATTENTION! temp: {temp.shape} ", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! before dec: {x.shape} ", file=sys.stderr, flush=True)
+
         pos_emb = self.h(rel_grid_final).reshape(1, 1, *self.decoder_initial_size)
 
 
-        print(f"\n\nATTENTION! before dec: {x.shape} ", file=sys.stderr, flush=True)
         print(f"\n\nATTENTION! self.h(rel_grid): {pos_emb.shape} ", file=sys.stderr, flush=True)
 
 

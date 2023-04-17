@@ -212,7 +212,7 @@ class InvariantSlotAttention(nn.Module):
                       flush=True)
 
                 S_p[:, i, :] = (attn[:, i] @ self.abs_grid_flattened) / attn[:, i].sum(dim=-1, keepdim=True)
-                return
+
                 # X_weighted = self.abs_grid @ attn
                 # X = (centered_grid[:, i, :, :] * attn_expanded[:, i, :, :])
                 # print(f"\n\nATTENTION! X.mean(axis=1): {X.mean(axis=1).shape} ", file=sys.stderr, flush=True)

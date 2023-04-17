@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#SBATCH --job-name=sa_od_tetrominoes1
+#SBATCH --job-name=sa_od_tetrominoes2
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-task=1
@@ -29,7 +29,7 @@ singularity exec instance://ml_env /bin/bash -c "
       nvidia-smi;
       free -m;
       cd /home/sa_atari;
-      python3 -u slot_attention_atari/training_od.py --dataset 'tetrominoes' --train_path "/home/sa_atari/datasets/tetrominoes" --val_path "/home/sa_atari/datasets/tetrominoes" --task '16.04'  --beta 0 --device 'gpu' --batch_size 64 --max_steps 50000 --seed 17 --num_workers 4 --no-invariance;
+      python3 -u slot_attention_atari/training_od.py --dataset 'tetrominoes' --train_path "/home/sa_atari/datasets/tetrominoes" --val_path "/home/sa_atari/datasets/tetrominoes" --task '16.04'  --beta 0 --device 'gpu' --batch_size 64 --max_steps 50000 --seed 17 --num_workers 4 --invariance;
       free -m;
 ";
 

@@ -165,7 +165,7 @@ class InvariantSlotAttention(nn.Module):
             # print(f"\n\nATTENTION! torch.inverse(S_r): {torch.inverse(S_r).shape} ", file=sys.stderr, flush=True)
 
             # rel_grid = torch.einsum('bskd,bsijd->bsijk', torch.inverse(S_r), (self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2)))
-            rel_grid = self.abs_grid.unsqueeze(dim=0) #- torch.zeros((b, n_s, 1, 1, 2)).cuda() #- S_p.view(b, n_s, 1, 1, 2)
+            rel_grid = self.abs_grid.unsqueeze(dim=0) #- S_p.view(b, n_s, 1, 1, 2)
 
             print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
 
@@ -178,8 +178,8 @@ class InvariantSlotAttention(nn.Module):
             r = self.g(rel_grid)
             print(f"\n\nATTENTION! e r: {e.shape} {r.shape} ", file=sys.stderr, flush=True)
 
-            k = self.f(self.to_k(inputs).unsqueeze(dim=1) + self.g(rel_grid).view(b, n_s, -1, d))
-            v = self.f(self.to_v(inputs).unsqueeze(dim=1) + self.g(rel_grid).view(b, n_s, -1, d))
+            k = self.f(self.to_k(inputs).unsqueeze(dim=1) + self.g(rel_grid).view(1, 1, -1, d)) # + self.g(rel_grid).view(b, n_s, -1, d))
+            v = self.f(self.to_v(inputs).unsqueeze(dim=1) + self.g(rel_grid).view(1, 1, -1, d)) # + self.g(rel_grid).view(b, n_s, -1, d))
             # print(f"\n\nATTENTION! k v: {k.shape} {v.shape} ", file=sys.stderr, flush=True)
 
             # Inverted dot production attention.

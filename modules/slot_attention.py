@@ -179,7 +179,7 @@ class InvariantSlotAttention(nn.Module):
             # e = self.to_k(inputs).unsqueeze(dim=1)
             # r = self.g(rel_grid)
             # print(f"\n\nATTENTION! e r: {e.shape} {r.shape} ", file=sys.stderr, flush=True)
-            pos_emb = + self.g(rel_grid).view(b, n_s, -1, d)
+            pos_emb = self.g(rel_grid).view(b, n_s, -1, d)
             k = self.f(to_k + pos_emb) # + self.g(rel_grid).view(1, 1, -1, d))
             v = self.f(to_v + pos_emb) # + self.g(rel_grid).view(b, n_s, -1, d))
             # print(f"\n\nATTENTION! k v: {k.shape} {v.shape} ", file=sys.stderr, flush=True)
@@ -199,7 +199,7 @@ class InvariantSlotAttention(nn.Module):
             # abs_grid_expanded = self.abs_grid_flattened.expand(b, self.abs_grid_flattened.shape[0], self.abs_grid_flattened.shape[1])
             # print(f"\n\nATTENTION! updates: {updates.shape} ", file=sys.stderr, flush=True)
 
-            # print(f"\n\nATTENTION! sp fl grid: {self.abs_grid_flattened.shape} ", file=sys.stderr, flush=True)
+            print(f"\n\nATTENTION! abs_grid_flattened grid: {self.abs_grid_flattened.shape} ", file=sys.stderr, flush=True)
 
             # attn_rect = attn.view(b, n_s, *self.resolution)
             # centered_grid = (self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2)).view(b, n_s, -1, 2)
@@ -208,7 +208,11 @@ class InvariantSlotAttention(nn.Module):
             # print(f"\n\nATTENTION! centered grid | att_rect: {centered_grid.shape} {attn_expanded.shape} ", file=sys.stderr, flush=True)
             # Updates Sp, Ss and slots.
             for i in range(n_s):
+                print(f"\n\nATTENTION! attn[:, i]: {self.attn[:, i].shape} ", file=sys.stderr,
+                      flush=True)
+
                 S_p[:, i, :] = (attn[:, i] @ self.abs_grid_flattened) / attn[:, i].sum(dim=-1, keepdim=True)
+                return
                 # X_weighted = self.abs_grid @ attn
                 # X = (centered_grid[:, i, :, :] * attn_expanded[:, i, :, :])
                 # print(f"\n\nATTENTION! X.mean(axis=1): {X.mean(axis=1).shape} ", file=sys.stderr, flush=True)

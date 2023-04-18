@@ -16,7 +16,7 @@
 
 singularity instance start \
                      --nv  \
-                     --allow-setuid \
+                     -f \
                      --bind /home/AI/yudin.da/smirnov_cv/sa_atari:/home/sa_atari \
                      ml_env.sif ml_env
 

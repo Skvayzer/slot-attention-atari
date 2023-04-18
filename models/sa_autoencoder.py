@@ -32,6 +32,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
                  task='',
                  invariance=True,
                  beta=0.01,
+                 delta=5,
                  lr=4e-4,
                  num_steps=int(3e5),
                  train_dataloader=None, **kwargs
@@ -48,6 +49,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         self.task = task
         self.invariance = invariance
         self.train_dataloader = train_dataloader
+        self.delta = delta
 
         # Encoder
         self.encoder = nn.Sequential(
@@ -86,7 +88,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         )
 
         if invariance:
-            self.slot_attention = InvariantSlotAttention(num_slots=num_slots, iters=num_iters, dim=slot_size,
+            self.slot_attention = InvariantSlotAttention(num_slots=num_slots, iters=num_iters, dim=slot_size, delta=self.delta,
                                                 hidden_dim=slot_size * 2, resolution=resolution, enc_hidden_size=hidden_size)
         else:
             self.slot_attention = SlotAttentionBase(num_slots=num_slots, iters=num_iters, dim=slot_size,
@@ -134,6 +136,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
             slots, S_p, S_r = self.slot_attention(x, n_s=num_slots)
             S_p = S_p.unsqueeze(dim=2)
             rel_grid = grid - S_p
+            rel_grid /= self.delta
         else:
             slots = self.slot_attention(x, n_s=num_slots)
             rel_grid = grid
@@ -157,9 +160,9 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
         # x = x.reshape(*x.shape[:2], -1)
         # pos_emb = self.h(rel_grid_final).reshape(*x.shape[:2], -1)
-        temp = self.h(rel_grid_final)
-        print(f"\n\nATTENTION! temp: {temp.shape} ", file=sys.stderr, flush=True)
-        print(f"\n\nATTENTION! before dec: {x.shape} ", file=sys.stderr, flush=True)
+        # temp = self.h(rel_grid_final)
+        # print(f"\n\nATTENTION! temp: {temp.shape} ", file=sys.stderr, flush=True)
+        # print(f"\n\nATTENTION! before dec: {x.shape} ", file=sys.stderr, flush=True)
 
         # pos_emb = self.h(rel_grid_final).reshape(1, x.shape[1], *self.decoder_initial_size)
         pos_emb = self.h(rel_grid_final).reshape(*x.shape[:2], *self.decoder_initial_size)
@@ -266,13 +269,13 @@ class InvariantSlotAttentionAE(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=0)
 
-        total_steps = 50_000 *2
+        total_steps = 50_000
         steps_in_epoch = len(self.train_dataloader)
         print(f"\n\nATTENTION! steps_in_epoch: {steps_in_epoch} ", file=sys.stderr, flush=True)
 
         max_epochs = math.ceil(total_steps / steps_in_epoch)
 
-        warmup_steps = 5_000 *2
+        warmup_steps = 5_000
         warmup_epochs = warmup_steps / steps_in_epoch
         decay_steps = total_steps - warmup_steps
 

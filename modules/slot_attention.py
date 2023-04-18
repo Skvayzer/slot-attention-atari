@@ -24,7 +24,7 @@ class InvariantSlotAttention(nn.Module):
     """
     Slot Attention module
     """
-    def __init__(self, num_slots, dim, iters=3, eps=1e-8, hidden_dim=128, resolution=(128, 128), enc_hidden_size=64):
+    def __init__(self, num_slots, dim, iters=3, eps=1e-8, delta=5, hidden_dim=128, resolution=(128, 128), enc_hidden_size=64):
         super().__init__()
         self.num_slots = num_slots
         self.iters = iters
@@ -32,7 +32,7 @@ class InvariantSlotAttention(nn.Module):
         self.scale = dim ** -0.5
         self.resolution = resolution
         self.dim = dim
-
+        self.delta = delta
 
         self.slots_mu = nn.Parameter(torch.randn(1, 1, dim))
         self.slots_logsigma = nn.Parameter(torch.zeros(1, 1, dim))
@@ -168,7 +168,7 @@ class InvariantSlotAttention(nn.Module):
 
             # rel_grid = torch.einsum('bskd,bsijd->bsijk', torch.inverse(S_r), (self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2)))
             rel_grid = self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2)
-
+            rel_grid /= self.delta
             print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
 
             # encoded_pos = self.encode_pos(inputs, rel_grid.cuda())

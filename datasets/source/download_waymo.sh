@@ -19,7 +19,7 @@ singularity instance start \
                      --bind /home/AI/yudin.da/smirnov_cv/sa_atari:/home/sa_atari \
                      ml_env.sif ml_env
 
-singularity exec instance://ml_env /bin/bash -c "
+singularity exec instance://ml_env /bin/bash -c --fakeroot "
       source /miniconda/etc/profile.d/conda.sh;
       conda activate ml_env;
       sudo apt-get install git;

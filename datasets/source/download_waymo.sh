@@ -23,8 +23,7 @@ singularity instance start \
 singularity exec instance://ml_env /bin/bash -c -f "
       source /miniconda/etc/profile.d/conda.sh;
       conda activate ml_env;
-      pip uninstall openexr;
-      pip install gcsfs waymo-open-dataset-tf-2-11-0==1.5.1;
+      pip install waymo-open-dataset-tf-2-11-0==1.5.1;
       set -x;
       nvidia-smi;
       free -m;

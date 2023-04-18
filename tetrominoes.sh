@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#SBATCH --job-name=sa_od_tetrominoes2
+#SBATCH --job-name=sa_od_tetrominoes3
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-task=1

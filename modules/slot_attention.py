@@ -182,16 +182,17 @@ class InvariantSlotAttention(nn.Module):
             pos_emb = self.g(rel_grid).view(b, n_s, -1, d)
             k = self.f(to_k + pos_emb) # + self.g(rel_grid).view(1, 1, -1, d))
             v = self.f(to_v + pos_emb) # + self.g(rel_grid).view(b, n_s, -1, d))
-            # print(f"\n\nATTENTION! k v: {k.shape} {v.shape} ", file=sys.stderr, flush=True)
+            print(f"\n\nATTENTION! k v: {k.shape} {v.shape} ", file=sys.stderr, flush=True)
 
             # Inverted dot production attention.
             q = self.to_q(slots)
             print(f"\n\nATTENTION! q: {q.shape} ", file=sys.stderr, flush=True)
 
             dots = torch.einsum('bid,bijd->bij', q, k) * self.scale
+
             attn = dots.softmax(dim=1) + self.eps
             attn = attn / attn.sum(dim=-1, keepdim=True)
-            # print(f"\n\nATTENTION! attn: {attn.shape} ", file=sys.stderr, flush=True)
+            print(f"\n\nATTENTION! attn: {attn.shape} ", file=sys.stderr, flush=True)
 
             updates = torch.einsum('bijd,bij->bid', v, attn)
 

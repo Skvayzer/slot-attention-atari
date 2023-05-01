@@ -1,3 +1,5 @@
+import sys
+
 import tensorflow as tf
 from torch.utils.data import Dataset
 import dask.dataframe as dd
@@ -20,10 +22,11 @@ class Waymo(Dataset):
 
         image = tf.image.decode_jpeg(row[self.col])
         image = tf.image.resize(image, self.resize, method='nearest').numpy()
-        print(image)
+
+        print(f"\n\nATTENTION! : {image} ", file=sys.stderr, flush=True)
         image = torch.from_numpy(image).float() / 255
-        print(idx)
-        print(image)
+        print(f"\n\nATTENTION! : {idx} ", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! : {image} ", file=sys.stderr, flush=True)
 
         return image
 

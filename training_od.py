@@ -153,6 +153,7 @@ train_loader = DataLoader(train_dataset, batch_size=args.batch_size, num_workers
                           drop_last=True, collate_fn=collate_fn)
 val_loader = DataLoader(val_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=False,
                         drop_last=True, collate_fn=collation)
+print(f"\n\nATTENTION! Loaded loaders", file=sys.stderr, flush=True)
 
 monitor = 'Validation MSE'
 if dataset == 'tetrominoes':

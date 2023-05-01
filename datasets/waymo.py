@@ -1,11 +1,12 @@
 import tensorflow as tf
 from torch.utils.data import Dataset
 import dask.dataframe as dd
+import torch
 
 
 # Define the Dataset class
 class Waymo(Dataset):
-    def __init__(self, path, col='[CameraImageComponent].image', resize=(128, 128)):
+    def __init__(self, path, col='[CameraImageComponent].image', resize=(128, 192)):
         self.dask_df = dd.read_parquet(path + "/*.parquet", columns=[col]) # read all files
         self.data_iterator = iter(self.dask_df.iterrows())
         self.col = col
@@ -18,7 +19,11 @@ class Waymo(Dataset):
         _, row = next(self.data_iterator)
 
         image = tf.image.decode_jpeg(row[self.col])
-        image = tf.image.resize(image, self.resize, method='nearest')
+        image = tf.image.resize(image, self.resize, method='nearest').numpy()
+        print(image)
+        image = torch.from_numpy(image).float() / 255
+        print(idx)
+        print(image)
 
-        return image.numpy()
+        return image
 

@@ -31,7 +31,7 @@ from pytorch_lightning import seed_everything
 
 from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader
-from datasets import MultiDSprites
+from datasets import MultiDSprites, Waymo
 
 from random import randrange
 
@@ -144,6 +144,9 @@ if dataset=='seaquest':
 elif dataset=='tetrominoes':
     train_dataset = MultiDSprites(path_to_dataset=(args.train_path + '/tetrominoes_train.npz'), mode='tetrominoes')
     val_dataset = MultiDSprites(path_to_dataset=(args.train_path + '/tetrominoes_val.npz'), mode='tetrominoes')
+elif dataset=='waymo':
+    train_dataset = Waymo(path=args.train_path)
+    val_dataset = Waymo(path=args.val_path)
 
 
 train_loader = DataLoader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True,

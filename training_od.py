@@ -149,7 +149,7 @@ elif dataset=='waymo':
     val_dataset = Waymo(path=args.val_path)
     print(f"\n\nATTENTION! Loaded waym", file=sys.stderr, flush=True)
 
-train_loader = DataLoader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True,
+train_loader = DataLoader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=False,
                           drop_last=True, collate_fn=collate_fn)
 val_loader = DataLoader(val_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=False,
                         drop_last=True, collate_fn=collation)

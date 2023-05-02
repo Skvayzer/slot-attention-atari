@@ -20,7 +20,8 @@ class Waymo(Dataset):
     def __len__(self):
         print(f"\n\nATTENTION! : computing waymo length ", file=sys.stderr, flush=True)
 
-        return len(self.dask_df)
+        #return len(self.dask_df)
+        return 70000
 
     def __getitem__(self, idx):
         print(f"\n\nATTENTION! : {idx} ", file=sys.stderr, flush=True)

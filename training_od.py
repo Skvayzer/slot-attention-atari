@@ -164,8 +164,12 @@ if dataset == 'tetrominoes':
     # autoencoder = SlotAttentionAE(resolution=(35, 35), hidden_size=32, decoder_initial_size=(35, 35),
     #                                 train_dataloader=train_loader, num_slots=4,
     #                               val_num_slots=4, **dict_args)
+elif dataset=='sequest':
+    autoencoder = InvariantSlotAttentionAE(**dict_args, resolution=resize, train_dataloader=train_loader, num_slots=15,
+                                            val_num_slots=15)
 else:
-    autoencoder = InvariantSlotAttentionAE(**dict_args, resolution=resize, train_dataloader=train_loader)
+    autoencoder = InvariantSlotAttentionAE(**dict_args, resolution=resize, train_dataloader=train_loader, num_slots=4,
+                                           val_num_slots=4)
 autoencoder.to(device)
 
 wandb_logger = WandbLogger(project=project_name, name=f'{args.task}: nums {args.nums!r} s {args.seed} kl {args.beta}',
@@ -225,6 +229,8 @@ if not len(args.from_checkpoint):
 #     ckpt = torch.load(args.from_checkpoint)
 #
 #     autoencoder.load_state_dict(state_dict=ckpt, strict=False)
+
+print(f"\n\nATTENTION! Starting Training", file=sys.stderr, flush=True)
 
 # Train
 trainer.fit(autoencoder, train_dataloaders=train_loader, val_dataloaders=val_loader, ckpt_path=args.from_checkpoint)

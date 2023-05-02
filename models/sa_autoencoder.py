@@ -103,7 +103,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         self.num_steps = num_steps
         self.lr = lr
         self.beta = beta
-        self.save_hyperparameters()
+        # self.save_hyperparameters()
 
     def preprocess(self, encoded):
         x = spatial_flatten(encoded)

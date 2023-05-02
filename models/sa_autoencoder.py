@@ -2,6 +2,7 @@ import math
 import os
 import sys
 
+import tensorflow as tf
 import pytorch_lightning as pl
 import torch
 import wandb

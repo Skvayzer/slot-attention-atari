@@ -4,15 +4,13 @@ import sys
 
 sys.path.append("..")
 
-from pytorch_lightning.loggers import WandbLogger
+import tensorflow as tf
 
 from argparse import ArgumentParser
 import argparse
 
 from models import SlotAttentionAE, InvariantSlotAttentionAE
 from torch.optim import lr_scheduler
-
-from torchvision.utils import save_image
 
 import torch
 import numpy as np

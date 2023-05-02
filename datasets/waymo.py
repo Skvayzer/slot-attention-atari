@@ -1,6 +1,6 @@
 import sys
 
-# import tensorflow as tf
+import tensorflow as tf
 from torch.utils.data import Dataset
 import dask.dataframe as dd
 import torch
@@ -18,6 +18,8 @@ class Waymo(Dataset):
 
 
     def __len__(self):
+        print(f"\n\nATTENTION! : computing waymo length ", file=sys.stderr, flush=True)
+
         return len(self.dask_df)
 
     def __getitem__(self, idx):
@@ -25,8 +27,8 @@ class Waymo(Dataset):
 
         _, row = next(self.data_iterator)
 
-        # image = tf.image.decode_jpeg(row[self.col])
-        # image = tf.image.resize(image, self.resize, method='nearest').numpy()
+        image = tf.image.decode_jpeg(row[self.col])
+        image = tf.image.resize(image, self.resize, method='nearest').numpy()
 
         print(f"\n\nATTENTION! : {image} ", file=sys.stderr, flush=True)
         image = torch.from_numpy(image).float() / 255

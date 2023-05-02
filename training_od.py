@@ -165,7 +165,7 @@ if dataset == 'tetrominoes':
     # autoencoder = SlotAttentionAE(resolution=(35, 35), hidden_size=32, decoder_initial_size=(35, 35),
     #                                 train_dataloader=train_loader, num_slots=4,
     #                               val_num_slots=4, **dict_args)
-elif dataset=='sequest':
+elif dataset=='seaquest':
     autoencoder = InvariantSlotAttentionAE(**dict_args, resolution=resize, train_dataloader=train_loader, num_slots=15,
                                             val_num_slots=15)
 else:

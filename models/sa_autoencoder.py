@@ -14,7 +14,7 @@ from torch.optim import lr_scheduler
 from modules import Decoder, PosEmbeds, ISAPosEmbeds, CoordQuantizer, MultiDspritesDecoder, TetrominoesDecoder, WaymoDecoder
 from modules.slot_attention import SlotAttentionBase, InvariantSlotAttention
 from utils import spatial_broadcast, spatial_flatten, adjusted_rand_index, mask_iou
-
+import torchvision
 
 class InvariantSlotAttentionAE(pl.LightningModule):
     """
@@ -52,17 +52,20 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         self.train_dataloader = train_dataloader
         self.delta = delta
 
-        # Encoder
-        self.encoder = nn.Sequential(
-            nn.Conv2d(in_channels, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU(),
-            *[nn.Sequential(nn.Conv2d(hidden_size, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU()) for _ in
-              range(3)]
-        )
+        if dataset=='waymo':
+            self.encoder = torchvision.models.resnet34(pretrained=True)
+        else:
+            # Encoder
+            self.encoder = nn.Sequential(
+                nn.Conv2d(in_channels, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU(),
+                *[nn.Sequential(nn.Conv2d(hidden_size, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU()) for _ in
+                  range(3)]
+            )
 
 
 
         # Decoder
-        if dataset in ['seaquest', 'waymo']:
+        if dataset in ['seaquest']:
             self.decoder_initial_size = (8, 8)
             self.decoder = Decoder(num_channels=slot_size)
         # elif dataset=='tetrominoes':

@@ -77,10 +77,10 @@ class InvariantSlotAttentionAE(pl.LightningModule):
                                    mode=dataset)
         elif dataset=='waymo':
             self.decoder_initial_size = (16, 24)
-            self.decoder = MultiDspritesDecoder(in_channels=self.slot_size,
-                                                hidden_channels=self.hidden_size,
-                                                out_channels=4,
-                                                mode=dataset)
+            self.decoder = WaymoDecoder(in_channels=self.slot_size,
+                                        hidden_channels=self.hidden_size,
+                                        out_channels=4,
+                                        )
 
         self.enc_emb = ISAPosEmbeds(hidden_size, self.resolution)
         self.dec_emb = ISAPosEmbeds(hidden_size, self.decoder_initial_size)

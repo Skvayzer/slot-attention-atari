@@ -234,14 +234,15 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         self.log('Validation MSE', loss)
         self.log('Validation iou', iou_loss)
 
-        true_masks = batch['mask']
-        # print("\n\nATTENTION! true_masks: ", true_masks, true_masks.shape, file=sys.stderr, flush=True)
-        # print("\n\nATTENTION! pred_masks: ", pred_masks, pred_masks.shape, file=sys.stderr, flush=True)
+        if self.dataset in ['tetrominoes']:
+            true_masks = batch['mask']
+            # print("\n\nATTENTION! true_masks: ", true_masks, true_masks.shape, file=sys.stderr, flush=True)
+            # print("\n\nATTENTION! pred_masks: ", pred_masks, pred_masks.shape, file=sys.stderr, flush=True)
 
-        pred_masks = pred_masks.view(*pred_masks.shape[:2], -1)
-        true_masks = true_masks.view(*true_masks.shape[:2], -1)[:, 1:, :]
-        # print("ATTENTION! MASKS (true/pred): ", true_masks.shape, pred_masks.shape, file=sys.stderr, flush=True)
-        self.log('ARI', adjusted_rand_index(true_masks.float().cpu(), pred_masks.float().cpu()).mean())
+            pred_masks = pred_masks.view(*pred_masks.shape[:2], -1)
+            true_masks = true_masks.view(*true_masks.shape[:2], -1)[:, 1:, :]
+            # print("ATTENTION! MASKS (true/pred): ", true_masks.shape, pred_masks.shape, file=sys.stderr, flush=True)
+            self.log('ARI', adjusted_rand_index(true_masks.float().cpu(), pred_masks.float().cpu()).mean())
 
         if batch_idx == 0:
             imgs = batch['image']

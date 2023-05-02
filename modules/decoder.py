@@ -35,7 +35,7 @@ class MultiDspritesDecoder(nn.Module):
                  out_channels: int = 4,
                  mode='clevr_with_masks'):
         super(MultiDspritesDecoder, self).__init__()
-        if mode == 'clevr_with_masks':
+        if mode in ['clevr_with_masks']:
             self.decoder_cnn = nn.Sequential(
                 nn.ConvTranspose2d(in_channels, hidden_channels,
                                    kernel_size=5, stride=(2, 2), padding=2, output_padding=1), nn.ReLU(),
@@ -87,4 +87,33 @@ class TetrominoesDecoder(nn.Module):
 
     def forward(self, x):
         return self.decoder_mlp(x)
+
+
+class WaymoDecoder(nn.Module):
+    def __init__(self,
+                 *,
+                 in_channels: int = 64,
+                 hidden_channels: int = 64,
+                 out_channels: int = 4
+                 ):
+        super(WaymoDecoder, self).__init__()
+
+        self.decoder_cnn = nn.Sequential(
+            nn.ConvTranspose2d(in_channels, hidden_channels,
+                               kernel_size=5, stride=(2, 2), padding=2, output_padding=1), nn.ReLU(),
+            nn.ConvTranspose2d(hidden_channels, hidden_channels,
+                               kernel_size=5, stride=(2, 2), padding=2, output_padding=1), nn.ReLU(),
+            nn.ConvTranspose2d(hidden_channels, hidden_channels,
+                               kernel_size=5, stride=(2, 2), padding=2, output_padding=1), nn.ReLU(),
+            nn.ConvTranspose2d(hidden_channels, hidden_channels,
+                               kernel_size=5, stride=(1, 1), padding=2, output_padding=1), nn.ReLU(),
+            nn.ConvTranspose2d(hidden_channels, hidden_channels,
+                               kernel_size=5, stride=(1, 1), padding=2), nn.ReLU(),
+            nn.ConvTranspose2d(hidden_channels, out_channels,
+                               kernel_size=5, stride=(1, 1), padding=1)
+        )
+
+
+    def forward(self, x):
+        return self.decoder_cnn(x)
 

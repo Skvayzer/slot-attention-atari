@@ -10,7 +10,7 @@ from torch import nn
 from torch.nn import functional as F
 from torch.optim import lr_scheduler
 
-from modules import Decoder, PosEmbeds, ISAPosEmbeds, CoordQuantizer, MultiDspritesDecoder, TetrominoesDecoder
+from modules import Decoder, PosEmbeds, ISAPosEmbeds, CoordQuantizer, MultiDspritesDecoder, TetrominoesDecoder, WaymoDecoder
 from modules.slot_attention import SlotAttentionBase, InvariantSlotAttention
 from utils import spatial_broadcast, spatial_flatten, adjusted_rand_index, mask_iou
 
@@ -69,12 +69,18 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         #     self.decoder = TetrominoesDecoder(in_channels=self.resolution[0]*self.resolution[1],
         #                                         hidden_channels=256,
         #                                         out_channels=4)
-        else:
+        elif dataset=='tetrominoes':
             self.decoder_initial_size = self.resolution
             self.decoder = MultiDspritesDecoder(in_channels=self.slot_size,
                                    hidden_channels=self.hidden_size,
                                    out_channels=4,
                                    mode=dataset)
+        elif dataset=='waymo':
+            self.decoder_initial_size = (16, 24)
+            self.decoder = MultiDspritesDecoder(in_channels=self.slot_size,
+                                                hidden_channels=self.hidden_size,
+                                                out_channels=4,
+                                                mode=dataset)
 
         self.enc_emb = ISAPosEmbeds(hidden_size, self.resolution)
         self.dec_emb = ISAPosEmbeds(hidden_size, self.decoder_initial_size)

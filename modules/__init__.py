@@ -1,4 +1,4 @@
-from .decoder import Decoder, MultiDspritesDecoder, TetrominoesDecoder
+from .decoder import Decoder, MultiDspritesDecoder, TetrominoesDecoder, WaymoDecoder
 from .pos_embeds import PosEmbeds, ISAPosEmbeds
 from .slot_attention import SlotAttention, SlotAttentionBase, SlotAttentionGMM, InvariantSlotAttention
 from .encoder import Encoder
@@ -18,5 +18,6 @@ __all__ = [
     'CoordQuantizer',
     'InvariantSlotAttention',
     'MultiDspritesDecoder',
-    'TetrominoesDecoder'
+    'TetrominoesDecoder',
+    'WaymoDecoder'
 ]

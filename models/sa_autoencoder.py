@@ -62,7 +62,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
 
         # Decoder
-        if dataset=='seaquest':
+        if dataset in ['seaquest', 'waymo']:
             self.decoder_initial_size = (8, 8)
             self.decoder = Decoder(num_channels=slot_size)
         # elif dataset=='tetrominoes':

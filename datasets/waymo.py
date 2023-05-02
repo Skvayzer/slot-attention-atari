@@ -33,6 +33,7 @@ class Waymo(Dataset):
 
         print(f"\n\nATTENTION! : {image} ", file=sys.stderr, flush=True)
         image = torch.from_numpy(image).float() / 255
+        image = image.permute(2, 0, 1)
         print(f"\n\nATTENTION! : {image} ", file=sys.stderr, flush=True)
         print(f"\n\nATTENTION! : {image.shape} ", file=sys.stderr, flush=True)
 

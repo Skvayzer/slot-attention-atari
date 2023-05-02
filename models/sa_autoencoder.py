@@ -204,6 +204,8 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         return loss, iou_loss, masks
 
     def training_step(self, batch, batch_idx):
+        print(f"\n\nATTENTION! Training step started ", file=sys.stderr, flush=True)
+
         optimizer = self.optimizers()
         sch = self.lr_schedulers()
         optimizer = optimizer.optimizer
@@ -220,9 +222,13 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         sch.step()
 
         self.log('lr', sch.get_last_lr()[0], on_step=True, on_epoch=False)
+        print(f"\n\nATTENTION! Training step ended ", file=sys.stderr, flush=True)
+
         return loss
 
     def validation_step(self, batch, batch_idx):
+        print(f"\n\nATTENTION! Validation step started ", file=sys.stderr, flush=True)
+
         loss, iou_loss, pred_masks = self.step(batch, num_slots=self.val_num_slots)
         self.log('Validation MSE', loss)
         self.log('Validation iou', iou_loss)
@@ -256,6 +262,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
                 })
 
+        print(f"\n\nATTENTION! Validation step ended ", file=sys.stderr, flush=True)
 
         # raise ValueError('A very specific bad thing happened.')
 

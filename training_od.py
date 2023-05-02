@@ -4,7 +4,7 @@ import sys
 
 sys.path.append("..")
 
-# import tensorflow as tf
+import tensorflow as tf
 
 from argparse import ArgumentParser
 import argparse

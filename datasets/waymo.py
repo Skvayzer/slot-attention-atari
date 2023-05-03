@@ -8,7 +8,7 @@ import torch
 
 # Define the Dataset class
 class Waymo(Dataset):
-    def __init__(self, path, col='[CameraImageComponent].image', resize=(128, 128), train=True):
+    def __init__(self, path, col='[CameraImageComponent].image', resize=(128, 192), train=True):
         print(f"\n\nATTENTION! started initialization waymo", file=sys.stderr, flush=True)
         self.dask_df = dd.read_parquet(path + "/*.parquet", columns=[col]) # read all files
         self.data_iterator = iter(self.dask_df.iterrows())

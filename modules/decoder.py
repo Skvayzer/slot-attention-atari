@@ -100,17 +100,17 @@ class WaymoDecoder(nn.Module):
 
         self.decoder_cnn = nn.Sequential(
             nn.ConvTranspose2d(in_channels, hidden_channels,
-                               kernel_size=5, stride=(2, 2), padding=2, output_padding=1), nn.ReLU(),
+                               kernel_size=5, stride=(2, 2), padding=2), nn.ReLU(),
             nn.ConvTranspose2d(hidden_channels, hidden_channels,
-                               kernel_size=5, stride=(2, 2), padding=2, output_padding=1), nn.ReLU(),
+                               kernel_size=5, stride=(2, 2), padding=2), nn.ReLU(),
             nn.ConvTranspose2d(hidden_channels, hidden_channels,
-                               kernel_size=5, stride=(2, 2), padding=2, output_padding=1), nn.ReLU(),
+                               kernel_size=5, stride=(2, 2), padding=2), nn.ReLU(),
             nn.ConvTranspose2d(hidden_channels, hidden_channels,
-                               kernel_size=5, stride=(1, 1), padding=2, output_padding=1), nn.ReLU(),
+                               kernel_size=5, stride=(1, 1), padding=1), nn.ReLU(),
             nn.ConvTranspose2d(hidden_channels, hidden_channels,
-                               kernel_size=5, stride=(1, 1), padding=2), nn.ReLU(),
+                               kernel_size=5, stride=(1, 1), padding=1), nn.ReLU(),
             nn.ConvTranspose2d(hidden_channels, out_channels,
-                               kernel_size=5, stride=(1, 1), padding=1)
+                               kernel_size=6, stride=(1, 1), padding=1)
         )
 
 

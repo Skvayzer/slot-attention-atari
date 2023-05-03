@@ -154,11 +154,10 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         else:
             slots = self.slot_attention(x, n_s=num_slots)
             rel_grid = grid
-        # print(f"\n\nATTENTION! before dec S_p: {S_p.shape} ", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! before dec S_p: {S_p.shape} ", file=sys.stderr, flush=True)
 
         x = spatial_broadcast(slots, self.decoder_initial_size)
-        # _, pos_emb = self.dec_emb(x)
-        # print(f"\n\nATTENTION! before dec pos emb: {grid.shape} ", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! before dec pos emb: {grid.shape} ", file=sys.stderr, flush=True)
         # print(f"\n\nATTENTION! S_r: {S_r.shape} ", file=sys.stderr, flush=True)
 
         # print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
@@ -182,6 +181,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         pos_emb = self.h(rel_grid_final).reshape(*x.shape[:2], *self.decoder_initial_size)
 
         print(f"\n\nATTENTION! pos_emb: {pos_emb.shape} ", file=sys.stderr, flush=True)
+        print(f"\n\nATTENTION! before x: {x.shape} ", file=sys.stderr, flush=True)
 
 
         x = self.decoder(x + pos_emb)

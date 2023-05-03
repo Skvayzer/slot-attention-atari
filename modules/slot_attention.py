@@ -241,7 +241,7 @@ class InvariantSlotAttention(nn.Module):
 
             # print(f"\n\nATTENTION! S_p: {S_p.shape} ", file=sys.stderr, flush=True)
 
-            # S_s = (((attn + self.eps)*(grid - S_p)**2).sum(dim=-1, keepdim=True)/(attn + self.eps).sum(dim=-1, keepdim=True))**0.5
+            S_s = (((attn + self.eps)*(grid - S_p)**2).sum(dim=-1, keepdim=True)/(attn + self.eps).sum(dim=-1, keepdim=True))**0.5
             # v1, v2 = WPCA().fit_transform(self.abs_grid, attn)
             # S_r = postprocess(v1, v2)
 
@@ -254,7 +254,7 @@ class InvariantSlotAttention(nn.Module):
                 slots = slots.reshape(b, -1, d)
                 slots = slots + self.mlp(self.norm_pre_ff(slots))
 
-        return slots, S_p, S_r
+        return slots, S_p, S_r, S_s
 
 
 class SlotAttentionBase(nn.Module):

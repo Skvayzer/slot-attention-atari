@@ -143,8 +143,8 @@ elif dataset=='tetrominoes':
     train_dataset = MultiDSprites(path_to_dataset=(args.train_path + '/tetrominoes_train.npz'), mode='tetrominoes')
     val_dataset = MultiDSprites(path_to_dataset=(args.train_path + '/tetrominoes_val.npz'), mode='tetrominoes')
 elif dataset=='waymo':
-    train_dataset = Waymo(path=args.train_path)
-    val_dataset = Waymo(path=args.val_path)
+    train_dataset = Waymo(path=args.train_path, train=True)
+    val_dataset = Waymo(path=args.val_path, train=False)
     print(f"\n\nATTENTION! Loaded waym", file=sys.stderr, flush=True)
 
 # train_loader = DataLoader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True,

@@ -121,7 +121,6 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
     def forward(self, inputs, num_slots=None, test=False):
         x = self.encoder(inputs)
-        x = x.view()
         # encoded torch.Size([32, 64, 128, 128])
         print(f"\n\nATTENTION! encoded {x.shape} ", file=sys.stderr, flush=True)
 

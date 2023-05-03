@@ -1,5 +1,5 @@
 from torch import nn
-import torch
+import torchvision
 
 class Encoder(nn.Module):
     """
@@ -23,7 +23,7 @@ class WaymoEncoder(nn.Module):
     def __init__(self, in_channels=3, hidden_size=64):
         super().__init__()
         self.hidden_size = hidden_size
-        self.resnet34 = torch.hub.load("pytorch/vision", "resnet34", weights="IMAGENET1K_V1")
+        self.resnet34 = torchvision.models.resnet34(pretrained=True) #torch.hub.load("pytorch/vision", "resnet34", weights="IMAGENET1K_V1")
         num_ftrs = self.resnet34.fc.in_features
         self.resnet34.fc = nn.Linear(num_ftrs, hidden_size*16*24)
 

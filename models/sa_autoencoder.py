@@ -11,7 +11,7 @@ from torch import nn
 from torch.nn import functional as F
 from torch.optim import lr_scheduler
 
-from modules import Decoder, PosEmbeds, ISAPosEmbeds, CoordQuantizer, MultiDspritesDecoder, TetrominoesDecoder, WaymoDecoder
+from modules import Decoder, PosEmbeds, ISAPosEmbeds, CoordQuantizer, MultiDspritesDecoder, TetrominoesDecoder, WaymoDecoder, WaymoEncoder
 from modules.slot_attention import SlotAttentionBase, InvariantSlotAttention
 from utils import spatial_broadcast, spatial_flatten, adjusted_rand_index, mask_iou
 import torchvision
@@ -52,20 +52,20 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         self.train_dataloader = train_dataloader
         self.delta = delta
 
-        # if dataset=='waymo':
-        #     self.encoder = torchvision.models.resnet34(pretrained=True)
-        # else:
-        # Encoder
-        self.encoder = nn.Sequential(
-            nn.Conv2d(in_channels, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU(),
-            *[nn.Sequential(nn.Conv2d(hidden_size, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU()) for _ in
-              range(3)]
-        )
+        if dataset=='waymo':
+            self.encoder = WaymoEncoder()
+        else:
+            # Encoder
+            self.encoder = nn.Sequential(
+                nn.Conv2d(in_channels, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU(),
+                *[nn.Sequential(nn.Conv2d(hidden_size, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU()) for _ in
+                  range(3)]
+            )
 
 
 
         # Decoder
-        if dataset in ['seaquest', 'waymo']:
+        if dataset in ['seaquest']:
             self.decoder_initial_size = (8, 8)
             self.decoder = Decoder(num_channels=slot_size)
         # elif dataset=='tetrominoes':
@@ -79,14 +79,17 @@ class InvariantSlotAttentionAE(pl.LightningModule):
                                    hidden_channels=self.hidden_size,
                                    out_channels=4,
                                    mode=dataset)
-        # elif dataset=='waymo':
-        #     self.decoder_initial_size = (16, 24)
-        #     self.decoder = WaymoDecoder(in_channels=self.slot_size,
-        #                                 hidden_channels=self.hidden_size,
-        #                                 out_channels=4,
-        #                                 )
+        elif dataset=='waymo':
+            self.decoder_initial_size = (16, 24)
+            self.decoder = WaymoDecoder(in_channels=self.slot_size,
+                                        hidden_channels=self.hidden_size,
+                                        out_channels=4,
+                                        )
+        if dataset=='waymo':
+            self.enc_emb = ISAPosEmbeds(hidden_size, (16, 24))
+        else:
+            self.enc_emb = ISAPosEmbeds(hidden_size, self.resolution)
 
-        self.enc_emb = ISAPosEmbeds(hidden_size, self.resolution)
         self.dec_emb = ISAPosEmbeds(hidden_size, self.decoder_initial_size)
         self.h = nn.Linear(2, slot_size)
 
@@ -118,6 +121,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
 
     def forward(self, inputs, num_slots=None, test=False):
         x = self.encoder(inputs)
+        x = x.view()
         # encoded torch.Size([32, 64, 128, 128])
         print(f"\n\nATTENTION! encoded {x.shape} ", file=sys.stderr, flush=True)
 

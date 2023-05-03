@@ -168,9 +168,9 @@ if dataset == 'tetrominoes':
 elif dataset=='seaquest':
     autoencoder = InvariantSlotAttentionAE(**dict_args, resolution=resize, train_dataloader=train_loader, num_slots=15,
                                             val_num_slots=15)
-else:
-    autoencoder = InvariantSlotAttentionAE(**dict_args, resolution=resize, train_dataloader=train_loader, num_slots=4,
-                                           val_num_slots=4)
+elif dataset == 'waymo':
+    autoencoder = InvariantSlotAttentionAE(**dict_args, resolution=resize, train_dataloader=train_loader, num_slots=10,
+                                           val_num_slots=10, lr=2e-4)
 autoencoder.to(device)
 
 wandb_logger = WandbLogger(project=project_name, name=f'{args.task}: nums {args.nums!r} s {args.seed} kl {args.beta}',

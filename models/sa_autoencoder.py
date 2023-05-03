@@ -291,13 +291,13 @@ class InvariantSlotAttentionAE(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=0)
 
-        total_steps = 50_000
+        total_steps = 500_000
         steps_in_epoch = len(self.train_dataloader)
         print(f"\n\nATTENTION! steps_in_epoch: {steps_in_epoch} ", file=sys.stderr, flush=True)
 
         max_epochs = math.ceil(total_steps / steps_in_epoch)
 
-        warmup_steps = 5_000
+        warmup_steps = 50_000
         warmup_epochs = warmup_steps / steps_in_epoch
         decay_steps = total_steps - warmup_steps
 

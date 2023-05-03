@@ -168,7 +168,7 @@ class InvariantSlotAttention(nn.Module):
 
             # rel_grid = torch.einsum('bskd,bsijd->bsijk', torch.inverse(S_r), (self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2)))
             rel_grid = self.abs_grid.unsqueeze(dim=0) - S_p.view(b, n_s, 1, 1, 2)
-            rel_grid /= self.delta
+            rel_grid /= S_s * self.delta
             print(f"\n\nATTENTION! rel_grid: {rel_grid.shape} ", file=sys.stderr, flush=True)
 
             # encoded_pos = self.encode_pos(inputs, rel_grid.cuda())
@@ -241,7 +241,7 @@ class InvariantSlotAttention(nn.Module):
 
             # print(f"\n\nATTENTION! S_p: {S_p.shape} ", file=sys.stderr, flush=True)
 
-            S_s = (((attn + self.eps)*(grid - S_p)**2).sum(dim=-1, keepdim=True)/(attn + self.eps).sum(dim=-1, keepdim=True))**0.5
+            S_s = (((attn + self.eps)@(self.abs_grid_flattened - S_p)**2).sum(dim=-1, keepdim=True)/(attn + self.eps).sum(dim=-1, keepdim=True))**0.5
             # v1, v2 = WPCA().fit_transform(self.abs_grid, attn)
             # S_r = postprocess(v1, v2)
 

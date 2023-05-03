@@ -52,20 +52,20 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         self.train_dataloader = train_dataloader
         self.delta = delta
 
-        if dataset=='waymo':
-            self.encoder = torchvision.models.resnet34(pretrained=True)
-        else:
-            # Encoder
-            self.encoder = nn.Sequential(
-                nn.Conv2d(in_channels, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU(),
-                *[nn.Sequential(nn.Conv2d(hidden_size, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU()) for _ in
-                  range(3)]
-            )
+        # if dataset=='waymo':
+        #     self.encoder = torchvision.models.resnet34(pretrained=True)
+        # else:
+        # Encoder
+        self.encoder = nn.Sequential(
+            nn.Conv2d(in_channels, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU(),
+            *[nn.Sequential(nn.Conv2d(hidden_size, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU()) for _ in
+              range(3)]
+        )
 
 
 
         # Decoder
-        if dataset in ['seaquest']:
+        if dataset in ['seaquest', 'waymo']:
             self.decoder_initial_size = (8, 8)
             self.decoder = Decoder(num_channels=slot_size)
         # elif dataset=='tetrominoes':
@@ -79,12 +79,12 @@ class InvariantSlotAttentionAE(pl.LightningModule):
                                    hidden_channels=self.hidden_size,
                                    out_channels=4,
                                    mode=dataset)
-        elif dataset=='waymo':
-            self.decoder_initial_size = (16, 24)
-            self.decoder = WaymoDecoder(in_channels=self.slot_size,
-                                        hidden_channels=self.hidden_size,
-                                        out_channels=4,
-                                        )
+        # elif dataset=='waymo':
+        #     self.decoder_initial_size = (16, 24)
+        #     self.decoder = WaymoDecoder(in_channels=self.slot_size,
+        #                                 hidden_channels=self.hidden_size,
+        #                                 out_channels=4,
+        #                                 )
 
         self.enc_emb = ISAPosEmbeds(hidden_size, self.resolution)
         self.dec_emb = ISAPosEmbeds(hidden_size, self.decoder_initial_size)

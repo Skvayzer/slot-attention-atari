@@ -147,7 +147,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
             slots, S_p, S_r, S_s = self.slot_attention(x, n_s=num_slots)
             S_p = S_p.unsqueeze(dim=2)
             rel_grid = grid - S_p
-            rel_grid /= S_s * self.delta
+            rel_grid /= self.delta
         else:
             slots = self.slot_attention(x, n_s=num_slots)
             rel_grid = grid

@@ -52,15 +52,15 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         self.train_dataloader = train_dataloader
         self.delta = delta
 
-        if dataset=='waymo':
-            self.encoder = torchvision.models.resnet34(pretrained=True)
-        else:
-            # Encoder
-            self.encoder = nn.Sequential(
-                nn.Conv2d(in_channels, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU(),
-                *[nn.Sequential(nn.Conv2d(hidden_size, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU()) for _ in
-                  range(3)]
-            )
+        # if dataset=='waymo':
+        #     self.encoder = torchvision.models.resnet34(pretrained=True)
+        # else:
+        # Encoder
+        self.encoder = nn.Sequential(
+            nn.Conv2d(in_channels, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU(),
+            *[nn.Sequential(nn.Conv2d(hidden_size, hidden_size, kernel_size=5, padding=(2, 2)), nn.ReLU()) for _ in
+              range(3)]
+        )
 
 
 
@@ -120,7 +120,7 @@ class InvariantSlotAttentionAE(pl.LightningModule):
         x = self.encoder(inputs)
         print(f"\n\nATTENTION! encoded {x.shape} ", file=sys.stderr, flush=True)
         # torch.autograd.set_detect_anomaly(True)
-
+        return
         # if not self.invariance:
         x = self.enc_emb(x)
         # print(f"\n\nATTENTION! x {x[0].shape} {x[1]} ", file=sys.stderr, flush=True)

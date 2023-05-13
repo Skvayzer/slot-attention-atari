@@ -236,7 +236,7 @@ print(f"\n\nATTENTION! Starting Training", file=sys.stderr, flush=True)
 # Train
 trainer.fit(autoencoder, train_dataloaders=train_loader, val_dataloaders=val_loader, ckpt_path=args.from_checkpoint)
 # Test
-trainer.test(dataloaders=val_loader, ckpt_path=None)
+trainer.test(dataloaders=val_loader)
 wandb.finish()
 
 
